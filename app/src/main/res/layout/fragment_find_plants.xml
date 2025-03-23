@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:textAlignment="textEnd"
+    tools:context=".ui.home.FindPlantsFragment">
+
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="25px"
+        android:layout_marginTop="25px"
+        android:text="Find Plant"
+        android:textColor="@color/black"
+        android:textSize="30sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageView
+        android:id="@+id/favorite"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_gravity="end"
+        android:layout_marginTop="25px"
+        android:layout_marginRight="125px"
+        android:contentDescription="Iconiță favorite"
+        android:src="@drawable/favorite" />
+
+    <Button
+        android:id="@+id/search"
+        android:layout_width="150dp"
+        android:layout_height="50dp"
+        android:layout_marginLeft="25px"
+        android:layout_marginTop="140px"
+        android:background="@drawable/rounded_corners_black"
+        android:text=" Search"
+        android:textAlignment="textStart"
+        android:paddingLeft="16dp"
+        android:drawableStart="@drawable/search"
+        android:textAllCaps="false"
+        android:textColor="#686868" />
+    <Button
+        android:id="@+id/identify"
+        android:layout_width="150dp"
+        android:layout_height="50dp"
+        android:layout_marginTop="140px"
+        android:layout_marginRight="25px"
+        android:layout_gravity="end"
+        android:textColor="#686868"
+        android:paddingLeft="16dp"
+        android:background="@drawable/rounded_corners_black"
+        android:drawableStart="@drawable/photo_camera"
+        android:textAllCaps="false"
+        android:gravity="start|center_vertical"
+        android:text=" Identify"/>
+
+    <Button
+        android:id="@+id/btnPlantFinder"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="25px"
+        android:layout_marginTop="300px"
+        android:layout_marginRight="25px"
+        android:background="@drawable/square_round_corners"
+        android:drawableStart="@drawable/filter"
+        android:drawableEnd="@drawable/arrow_to_right"
+        android:gravity="start|center_vertical"
+        android:paddingLeft="16dp"
+        android:paddingRight="16dp"
+        android:text=" Plant Finder\n Choose the perfect plants for you!"
+        android:textAllCaps="false"
+        android:textColor="#686868"
+        android:textSize="14sp" />
+
+
+
+
+
+</FrameLayout>

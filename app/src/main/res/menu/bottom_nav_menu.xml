@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item android:title="My Plants"
+        android:icon="@drawable/water_drop"
+        android:id="@+id/myPlants"/>
+    <item android:title="Find Plants"
+        android:icon="@drawable/search"
+        android:id="@+id/findPlants"/>
+    <item android:title="Profile"
+        android:icon="@drawable/person"
+        android:id="@+id/profile"/>
+</menu>

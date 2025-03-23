@@ -1,0 +1,49 @@
+{
+  "project_info": {
+    "project_number": "613349558267",
+    "firebase_url": "https://licenta-b11c9-default-rtdb.firebaseio.com",
+    "project_id": "licenta-b11c9",
+    "storage_bucket": "licenta-b11c9.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:613349558267:android:9438e97f29b26543936d5e",
+        "android_client_info": {
+          "package_name": "com.example.licenta"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDN17rSThWk4kTRl5aR8d9FzVY7eytVLBk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:613349558267:android:ec70d366905980bc936d5e",
+        "android_client_info": {
+          "package_name": "com.example.licenta_v2"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDN17rSThWk4kTRl5aR8d9FzVY7eytVLBk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

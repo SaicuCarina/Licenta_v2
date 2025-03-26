@@ -35,7 +35,7 @@ public class PlantDetailsResponse {
     }
 
     public String getImageUrl() {
-        return image_url;
+        return imageUrl != null ? imageUrl : image_url;
     }
 
     public Taxonomy getTaxonomy() {

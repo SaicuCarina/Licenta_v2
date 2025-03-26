@@ -20,6 +20,7 @@ public class PlantDatabase {
         plantData.put("scientificName", details.getScientificName());
         plantData.put("commonName", details.getCommonName());
         plantData.put("family", details.getFamily());
+        plantData.put("image_url", details.getImageUrl());
         plantData.put("description", details.getDescription());
         plantData.put("taxonomy", details.getTaxonomy());
         plantData.put("synonyms", details.getSynonyms());

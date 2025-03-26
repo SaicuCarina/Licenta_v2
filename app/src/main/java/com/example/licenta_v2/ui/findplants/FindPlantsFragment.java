@@ -23,11 +23,17 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.licenta_v2.R;
 import com.example.licenta_v2.model.PlantDetailsResponse;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.io.ByteArrayOutputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 public class FindPlantsFragment extends Fragment {
 
@@ -38,6 +44,11 @@ public class FindPlantsFragment extends Fragment {
     private ActivityResultLauncher<Intent> cameraLauncher;
 
     private static final int CAMERA_PERMISSION_CODE = 100;
+
+    private RecyclerView recyclerView;
+    private PlantAdapter adapter;
+    private List<PlantDetailsResponse> plantList = new ArrayList<>();
+    private Bitmap lastCapturedImage;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -51,12 +62,30 @@ public class FindPlantsFragment extends Fragment {
                     if (result.getResultCode() == getActivity().RESULT_OK && result.getData() != null) {
                         Bitmap imageBitmap = (Bitmap) result.getData().getExtras().get("data");
                         if (imageBitmap != null) {
+                            lastCapturedImage = imageBitmap;
+
                             String base64Image = convertBitmapToBase64(imageBitmap);
                             viewModel.identifyPlant(base64Image);
                         }
                     }
                 }
         );
+    }
+
+    private void loadPlantsFromFirebase() {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        db.collection("plants").get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    plantList.clear();
+                    for (QueryDocumentSnapshot doc : queryDocumentSnapshots) {
+                        PlantDetailsResponse plant = doc.toObject(PlantDetailsResponse.class);
+                        plantList.add(plant);
+                    }
+                    adapter.updateList(plantList);
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("Firebase", "Eroare la citirea plantelor: " + e.getMessage());
+                });
     }
 
     @Override
@@ -66,14 +95,22 @@ public class FindPlantsFragment extends Fragment {
         identifyButton = view.findViewById(R.id.identify);
         loadingBar = new ProgressBar(requireContext(), null, android.R.attr.progressBarStyleLarge);
         loadingBar.setVisibility(View.GONE);
-        ((ViewGroup) view).addView(loadingBar); // Adaugăm loadingBar în layout programatic
+        ((ViewGroup) view).addView(loadingBar);
 
         identifyButton.setOnClickListener(v -> openCamera());
+
+        recyclerView = view.findViewById(R.id.plantsRecyclerView);
+        recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
+        adapter = new PlantAdapter(plantList);
+        recyclerView.setAdapter(adapter);
+
+        loadPlantsFromFirebase();
 
         observeViewModel();
 
         return view;
     }
+
 
     private void openCamera() {
         if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.CAMERA)

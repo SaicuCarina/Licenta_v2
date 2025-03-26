@@ -1,9 +1,14 @@
 package com.example.licenta_v2.model;
 
+import android.graphics.Bitmap;
 import android.util.Log;
 
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 
+import java.io.ByteArrayOutputStream;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -20,6 +25,7 @@ public class PlantDatabase {
         plantData.put("scientificName", details.getScientificName());
         plantData.put("commonName", details.getCommonName());
         plantData.put("family", details.getFamily());
+        plantData.put("imageUrl", details.getImageUrl());
         plantData.put("description", details.getDescription());
         plantData.put("taxonomy", details.getTaxonomy());
         plantData.put("synonyms", details.getSynonyms());
@@ -33,5 +39,27 @@ public class PlantDatabase {
                 .addOnSuccessListener(documentReference -> Log.d(TAG, "Planta salvată cu ID: " + documentReference.getId()))
                 .addOnFailureListener(e -> Log.w(TAG, "Eroare la salvarea plantei", e));
     }
+
+    public void savePlantWithImage(Bitmap bitmap, PlantDetailsResponse details) {
+        FirebaseStorage storage = FirebaseStorage.getInstance();
+        StorageReference storageRef = storage.getReference();
+        StorageReference imageRef = storageRef.child("plant_images/" + System.currentTimeMillis() + ".jpg");
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+        byte[] imageData = baos.toByteArray();
+
+        UploadTask uploadTask = imageRef.putBytes(imageData);
+        uploadTask.addOnSuccessListener(taskSnapshot -> {
+            imageRef.getDownloadUrl().addOnSuccessListener(uri -> {
+                // ✅ aici salvăm URL-ul în model și apoi în Firestore
+                details.setImageUrl(uri.toString());
+                savePlantToFirebase(details);
+            });
+        }).addOnFailureListener(e -> {
+            Log.e("PlantDatabase", "Eroare la upload imagine: " + e.getMessage());
+        });
+    }
+
 
 }

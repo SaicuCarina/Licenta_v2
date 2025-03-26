@@ -43,7 +43,8 @@ public class PlantRepository {
             @Override
             public void onResponse(Call<IdentificationResponse> call, Response<IdentificationResponse> response) {
                 if (response.isSuccessful() && response.body() != null) {
-                    getPlantDetails(response.body().getAccessToken(), callback);
+                    // PASĂM IMAGINEA CĂTRE GET PLANT DETAILS
+                    getPlantDetails(response.body().getAccessToken(), base64Image, callback);
                 } else {
                     try {
                         callback.onError("Eroare identificare: " + response.errorBody().string());
@@ -60,7 +61,7 @@ public class PlantRepository {
         });
     }
 
-    private void getPlantDetails(String accessToken, PlantCallback callback) {
+    private void getPlantDetails(String accessToken, String base64Image, PlantCallback callback) {
         new Handler(Looper.getMainLooper()).postDelayed(() -> {
             apiService.checkIdentificationStatus(
                     accessToken,
@@ -75,8 +76,7 @@ public class PlantRepository {
                                 response.body().getResult().getClassification().getSuggestions();
 
                         if (suggestions == null || suggestions.isEmpty()) {
-                            // Retry după 2 secunde dacă nu sunt sugestii
-                            getPlantDetails(accessToken, callback);
+                            getPlantDetails(accessToken, base64Image, callback);
                             return;
                         }
 
@@ -87,7 +87,9 @@ public class PlantRepository {
                                 details.setCommonName(suggestions.get(0).getName());
                             }
 
-                            // Salvează planta în Firebase
+                            // SETEAZĂ IMAGINEA MANUAL
+                            details.setImageUrl(base64Image);
+
                             new PlantDatabase().savePlantToFirebase(details);
 
                             callback.onSuccess(details);

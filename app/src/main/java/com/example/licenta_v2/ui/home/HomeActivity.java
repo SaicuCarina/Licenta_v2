@@ -16,6 +16,7 @@ import androidx.fragment.app.FragmentTransaction;
 
 import com.example.licenta_v2.R;
 import com.example.licenta_v2.databinding.ActivityHomeBinding;
+import com.example.licenta_v2.ui.findplants.FindPlantsFragment;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 

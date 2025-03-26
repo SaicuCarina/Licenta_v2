@@ -46,6 +46,7 @@ dependencies {
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
     implementation("com.google.firebase:firebase-database:20.3.0")
+    implementation("com.google.firebase:firebase-storage:20.3.0")
     implementation("com.google.firebase:firebase-auth:22.1.0")
     implementation("com.google.android.gms:play-services-basement:18.2.0")
     implementation("com.google.android.gms:play-services-auth:20.7.0")

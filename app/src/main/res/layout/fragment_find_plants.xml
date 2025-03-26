@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:textAlignment="textEnd"
-    tools:context=".ui.home.FindPlantsFragment">
+    tools:context=".ui.findplants.FindPlantsFragment">
 
     <TextView
         android:id="@+id/textView"

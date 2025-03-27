@@ -7,13 +7,14 @@ public class PlantDetailsResponse {
     private String scientific_name;
     private Description description;
     private String family;
-    private String imageUrl;
+    private String image_url;
     private Taxonomy taxonomy;
     private List<String> synonyms;
     private List<String> edible_parts;
     private Watering watering;
     private List<String> propagation_methods;
     private String best_light_condition;
+    private String imageUrl;
 
     public String getCommonName() {
         return common_name;
@@ -31,6 +32,10 @@ public class PlantDetailsResponse {
 
     public String getFamily() {
         return family;
+    }
+
+    public String getImageUrl() {
+        return image_url;
     }
 
     public Taxonomy getTaxonomy() {
@@ -53,14 +58,9 @@ public class PlantDetailsResponse {
         return propagation_methods;
     }
 
-    public String getImageUrl() {
-        return imageUrl;
-    }
-
     public void setImageUrl(String imageUrl) {
         this.imageUrl = imageUrl;
     }
-
 
     @Override
     public String toString() {
@@ -69,7 +69,7 @@ public class PlantDetailsResponse {
                 ", scientific_name='" + scientific_name + '\'' +
                 ", description='" + (description != null ? description.getValue() : "null") + '\'' +
                 ", family='" + family + '\'' +
-                ", image_url='" + imageUrl + '\'' +
+                ", image_url='" + image_url + '\'' +
                 ", taxonomy=" + taxonomy +
                 ", synonyms=" + synonyms +
                 ", edible_parts=" + edible_parts +

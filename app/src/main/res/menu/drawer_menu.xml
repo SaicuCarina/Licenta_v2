@@ -2,6 +2,10 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <group android:checkableBehavior="single">
         <item
+            android:id="@+id/nav_account_set"
+            android:icon="@drawable/person_outline"
+            android:title="Account Settings" />
+        <item
             android:id="@+id/nav_help"
             android:icon="@drawable/help"
             android:title="Help" />

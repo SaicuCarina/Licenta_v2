@@ -1,26 +1,28 @@
 package com.example.licenta_v2.ui.findplants;
 
-import android.graphics.BitmapFactory;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.util.Base64;
-import android.graphics.Bitmap;
+
 import com.bumptech.glide.Glide;
-
-
-import androidx.recyclerview.widget.RecyclerView;
-
 import com.example.licenta_v2.R;
 import com.example.licenta_v2.model.PlantDetailsResponse;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FirebaseFirestore;
+
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.List;
 
 public class PlantAdapter extends RecyclerView.Adapter<PlantAdapter.PlantViewHolder> {
     private List<PlantDetailsResponse> plantList;
+    private final FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
 
     public PlantAdapter(List<PlantDetailsResponse> plantList) {
         this.plantList = plantList;
@@ -29,30 +31,31 @@ public class PlantAdapter extends RecyclerView.Adapter<PlantAdapter.PlantViewHol
     public static class PlantViewHolder extends RecyclerView.ViewHolder {
         ImageView imageView;
         TextView nameView;
+        ImageView favoriteButton;
 
         public PlantViewHolder(View itemView) {
             super(itemView);
             imageView = itemView.findViewById(R.id.plantImage);
             nameView = itemView.findViewById(R.id.plantName);
+            favoriteButton = itemView.findViewById(R.id.favoriteButton);
         }
     }
 
+    @NonNull
     @Override
-    public PlantViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public PlantViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_plant, parent, false);
         return new PlantViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(PlantViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull PlantViewHolder holder, int position) {
         PlantDetailsResponse plant = plantList.get(position);
         holder.nameView.setText(plant.getCommonName());
 
         String imageUrl = plant.getImageUrl();
-
         Log.d("PlantAdapter", "Plant: " + plant.getCommonName() + " - imageUrl=" + imageUrl);
 
-        // Dacă planta are o imagine validă base64, o afișăm
         if (imageUrl != null && !imageUrl.isEmpty()) {
             Glide.with(holder.itemView.getContext())
                     .load(imageUrl)
@@ -61,8 +64,36 @@ public class PlantAdapter extends RecyclerView.Adapter<PlantAdapter.PlantViewHol
         } else {
             holder.imageView.setImageResource(R.drawable.ic_launcher_background);
         }
+
+        updateFavoriteIcon(holder.favoriteButton, plant.isFavorite());
+
+        holder.favoriteButton.setOnClickListener(v -> {
+            boolean isNowFavorite = !plant.isFavorite();
+            plant.setFavorite(isNowFavorite);
+            updateFavoriteIcon(holder.favoriteButton, isNowFavorite);
+            updateFavoriteInFirestore(plant);
+        });
     }
 
+    private void updateFavoriteIcon(ImageView icon, boolean isFavorite) {
+        icon.setImageResource(isFavorite ? R.drawable.favorite : R.drawable.favorite_border);
+    }
+
+    private void updateFavoriteInFirestore(PlantDetailsResponse plant) {
+        if (currentUser == null) return;
+
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        DocumentReference favRef = db.collection("users")
+                .document(currentUser.getUid())
+                .collection("favorites")
+                .document(plant.getCommonName());
+
+        if (plant.isFavorite()) {
+            favRef.set(plant);
+        } else {
+            favRef.delete();
+        }
+    }
 
     @Override
     public int getItemCount() {
@@ -74,4 +105,3 @@ public class PlantAdapter extends RecyclerView.Adapter<PlantAdapter.PlantViewHol
         notifyDataSetChanged();
     }
 }
-

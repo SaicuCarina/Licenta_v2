@@ -71,7 +71,7 @@ public class HomeActivity extends AppCompatActivity {
             if (id == R.id.nav_help) {
                 replaceFragment(new ProfileFragment());
             } else if (id == R.id.nav_notifications) {
-                replaceFragment(new ProfileFragment()); // aici trebuie modificat !!!!!!!
+                replaceFragment(new ProfileFragment());
             } else if (id == R.id.nav_logout) {
                 FirebaseAuth.getInstance().signOut();
 

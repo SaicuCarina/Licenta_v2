@@ -4,25 +4,70 @@ import java.util.List;
 
 public class PlantDetailsResponse {
     private String common_name;
-    private String scientific_name;
+    private String scientificName;
     private Description description;
     private String family;
     private Taxonomy taxonomy;
     private List<String> synonyms;
-    private List<String> edible_parts;
+    private List<String> edibleParts;
     private Watering watering;
-    private List<String> propagation_methods;
-    private String best_light_condition;
+    private List<String> propagationMethods;
+    private String bestLightCondition;
     private String imageUrl;
+    private boolean isFavorite = false;
+
+    public boolean isFavorite() {
+        return isFavorite;
+    }
+
+    public void setFavorite(boolean favorite) {
+        isFavorite = favorite;
+    }
+    public void setScientificName(String scientificName) {
+        this.scientificName = scientificName;
+    }
+
+    public void setDescription(Description description) {
+        this.description = description;
+    }
+
+    public void setFamily(String family) {
+        this.family = family;
+    }
+
+    public void setTaxonomy(Taxonomy taxonomy) {
+        this.taxonomy = taxonomy;
+    }
+
+    public void setSynonyms(List<String> synonyms) {
+        this.synonyms = synonyms;
+    }
+
+    public void setEdibleParts(List<String> edibleParts) {
+        this.edibleParts = edibleParts;
+    }
+
+    public void setWatering(Watering watering) {
+        this.watering = watering;
+    }
+
+    public void setPropagationMethods(List<String> propagationMethods) {
+        this.propagationMethods = propagationMethods;
+    }
+
+    public void setBestLightCondition(String bestLightCondition) {
+        this.bestLightCondition = bestLightCondition;
+    }
+
 
     public String getCommonName() {
         return common_name;
     }
     public String getBestLightCondition() {
-        return best_light_condition;
+        return bestLightCondition;
     }
     public String getScientificName() {
-        return scientific_name;
+        return scientificName;
     }
 
     public Description getDescription() {
@@ -51,7 +96,7 @@ public class PlantDetailsResponse {
     }
 
     public List<String> getEdibleParts() {
-        return edible_parts;
+        return edibleParts;
     }
 
     public Watering getWatering() {
@@ -59,23 +104,23 @@ public class PlantDetailsResponse {
     }
 
     public List<String> getPropagationMethods() {
-        return propagation_methods;
+        return propagationMethods;
     }
 
     @Override
     public String toString() {
         return "PlantDetailsResponse{" +
                 "common_name='" + common_name + '\'' +
-                ", scientific_name='" + scientific_name + '\'' +
+                ", scientific_name='" + scientificName + '\'' +
                 ", description='" + (description != null ? description.getValue() : "null") + '\'' +
                 ", family='" + family + '\'' +
                 ", image_url='" + imageUrl + '\'' +
                 ", taxonomy=" + taxonomy +
                 ", synonyms=" + synonyms +
-                ", edible_parts=" + edible_parts +
+                ", edible_parts=" + edibleParts +
                 ", watering=" + (watering != null ? watering.toString() : "null") +
-                ", propagation_methods=" + propagation_methods +
-                ", best_light_condition='" + best_light_condition + '\'' +
+                ", propagation_methods=" + propagationMethods +
+                ", best_light_condition='" + bestLightCondition + '\'' +
         '}';
     }
 
@@ -94,6 +139,23 @@ public class PlantDetailsResponse {
         public String getCitation() { return citation; }
         public String getLicenseName() { return license_name; }
         public String getLicenseUrl() { return license_url; }
+
+        public void setValue(String value) {
+            this.value = value;
+        }
+
+        public void setCitation(String citation) {
+            this.citation = citation;
+        }
+
+        public void setLicenseName(String license_name) {
+            this.license_name = license_name;
+        }
+
+        public void setLicenseUrl(String license_url) {
+            this.license_url = license_url;
+        }
+
 
         @Override
         public String toString() {

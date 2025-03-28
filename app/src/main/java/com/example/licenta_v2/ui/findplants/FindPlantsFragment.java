@@ -14,6 +14,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
@@ -23,13 +24,18 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.licenta_v2.R;
 import com.example.licenta_v2.model.PlantDetailsResponse;
+import com.example.licenta_v2.ui.favorites.FavoritesFragment;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+
 
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
@@ -74,38 +80,104 @@ public class FindPlantsFragment extends Fragment {
 
     private void loadPlantsFromFirebase() {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
-        db.collection("plants").get()
-                .addOnSuccessListener(queryDocumentSnapshots -> {
-                    plantList.clear();
-                    for (QueryDocumentSnapshot doc : queryDocumentSnapshots) {
-                        PlantDetailsResponse plant = doc.toObject(PlantDetailsResponse.class);
-                        plantList.add(plant);
-                    }
-                    adapter.updateList(plantList);
-                })
-                .addOnFailureListener(e -> {
-                    Log.e("Firebase", "Eroare la citirea plantelor: " + e.getMessage());
-                });
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+
+        loadingBar.setVisibility(View.VISIBLE);
+        recyclerView.setVisibility(View.GONE);
+
+        db.collection("plants").get().addOnSuccessListener(queryDocumentSnapshots -> {
+            plantList.clear();
+            List<PlantDetailsResponse> allPlants = new ArrayList<>();
+            for (QueryDocumentSnapshot doc : queryDocumentSnapshots) {
+                PlantDetailsResponse plant = doc.toObject(PlantDetailsResponse.class);
+                plant.setFavorite(false); // default
+                allPlants.add(plant);
+            }
+
+            if (user != null) {
+                db.collection("users")
+                        .document(user.getUid())
+                        .collection("favorites")
+                        .get()
+                        .addOnSuccessListener(favSnapshots -> {
+                            List<String> favoriteNames = new ArrayList<>();
+                            for (QueryDocumentSnapshot favDoc : favSnapshots) {
+                                String favName = favDoc.getId();  // AICI E MODIFICAREA
+                                if (favName != null) {
+                                    favoriteNames.add(favName);
+                                }
+                            }
+
+                            for (PlantDetailsResponse plant : allPlants) {
+                                String plantName = plant.getCommonName();
+                                if (plantName != null &&
+                                        favoriteNames.stream().anyMatch(fav -> fav.trim().equalsIgnoreCase(plantName.trim()))) {
+                                    plant.setFavorite(true);
+                                }
+                            }
+
+                            plantList.clear();
+                            plantList.addAll(allPlants);
+                            adapter.updateList(plantList);
+                            loadingBar.setVisibility(View.GONE);
+                            recyclerView.setVisibility(View.VISIBLE);
+                        })
+                        .addOnFailureListener(e -> {
+                            Log.e("Firebase", "Eroare la favorite: " + e.getMessage());
+                            plantList.clear();
+                            plantList.addAll(allPlants);
+                            adapter.updateList(plantList);
+                            loadingBar.setVisibility(View.GONE);
+                            recyclerView.setVisibility(View.VISIBLE);
+                        });
+            } else {
+                plantList.clear();
+                plantList.addAll(allPlants);
+                adapter.updateList(plantList);
+                loadingBar.setVisibility(View.GONE);
+                recyclerView.setVisibility(View.VISIBLE);
+            }
+        }).addOnFailureListener(e -> {
+            Log.e("Firebase", "Eroare la plante: " + e.getMessage());
+            loadingBar.setVisibility(View.GONE);
+        });
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_find_plants, container, false);
 
+        View bottomNav = requireActivity().findViewById(R.id.bottomNavigationView);
+        if (bottomNav != null) {
+            bottomNav.setVisibility(View.VISIBLE);
+        }
+
+
         identifyButton = view.findViewById(R.id.identify);
-        loadingBar = new ProgressBar(requireContext(), null, android.R.attr.progressBarStyleLarge);
+        recyclerView = view.findViewById(R.id.plantsRecyclerView);
+        loadingBar = view.findViewById(R.id.loadingBar);
+
+        recyclerView.setVisibility(View.GONE);
         loadingBar.setVisibility(View.GONE);
-        ((ViewGroup) view).addView(loadingBar);
+
+        ImageView favoriteIcon = view.findViewById(R.id.favorite);
+        favoriteIcon.setOnClickListener(v -> {
+            requireActivity().getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.frame_layout, new FavoritesFragment())
+                    .addToBackStack(null)
+                    .commit();
+        });
 
         identifyButton.setOnClickListener(v -> openCamera());
 
-        recyclerView = view.findViewById(R.id.plantsRecyclerView);
-        recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
+        int spacingInPixels = getResources().getDimensionPixelSize(R.dimen.grid_spacing);
+        recyclerView.setLayoutManager(new GridLayoutManager(requireContext(), 2));
+        recyclerView.addItemDecoration(new GridSpacingItemDecoration(2, spacingInPixels, true));
         adapter = new PlantAdapter(plantList);
         recyclerView.setAdapter(adapter);
 
         loadPlantsFromFirebase();
-
         observeViewModel();
 
         return view;

@@ -1,23 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="horizontal"
-    android:padding="8dp">
+    android:layout_margin="4dp">
 
     <ImageView
         android:id="@+id/plantImage"
-        android:layout_width="80dp"
-        android:layout_height="80dp"
+        android:layout_width="match_parent"
+        android:layout_height="180dp"
         android:scaleType="centerCrop"
-        android:src="@drawable/ic_launcher_background" />
+        android:contentDescription="Plant Image" />
 
+    <!-- Favorite button in top-right -->
+    <ImageView
+        android:id="@+id/favoriteButton"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:layout_gravity="top|end"
+        android:layout_margin="8dp"
+        android:src="@drawable/favorite_border"
+        android:contentDescription="Favorite Icon"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:padding="4dp" />
+
+    <!-- Text below image -->
     <TextView
         android:id="@+id/plantName"
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        android:layout_marginStart="16dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:layout_marginTop="8dp"
+        android:padding="8dp"
         android:text="Plant Name"
-        android:textSize="18sp"
-        android:gravity="center_vertical" />
-</LinearLayout>
+        android:gravity="center"
+        android:textColor="@android:color/black"
+        android:textSize="16sp"
+        android:background="@android:color/white" />
+</FrameLayout>
+

@@ -81,6 +81,8 @@ public class PlantRepository {
                         }
 
                         PlantDetailsResponse details = suggestions.get(0).getDetails();
+                        details.setId(suggestions.get(0).getId());
+
 
                         if (details != null) {
                             if (details.getCommonName() == null || details.getCommonName().isEmpty()) {
@@ -89,9 +91,7 @@ public class PlantRepository {
 
                             // SETEAZĂ IMAGINEA MANUAL
                             details.setImageUrl(base64Image);
-
-                            new PlantDatabase().savePlantToFirebase(details);
-
+                            details.setId(suggestions.get(0).getId());
                             callback.onSuccess(details);
                         } else {
                             callback.onError("Detaliile plantei lipsesc.");

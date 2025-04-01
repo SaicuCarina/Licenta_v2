@@ -34,10 +34,17 @@ public class PlantDatabase {
         plantData.put("propagationMethods", details.getPropagationMethods());
         plantData.put("bestLightCondition",details.getBestLightCondition());
 
-        db.collection("plants")
-                .add(plantData)
-                .addOnSuccessListener(documentReference -> Log.d(TAG, "Planta salvată cu ID: " + documentReference.getId()))
-                .addOnFailureListener(e -> Log.w(TAG, "Eroare la salvarea plantei", e));
+        String plantId = details.getId();
+        if (plantId != null && !plantId.isEmpty()) {
+            db.collection("plants")
+                    .document(plantId)
+                    .set(plantData)
+                    .addOnSuccessListener(aVoid -> Log.d(TAG, "Planta salvată cu ID: " + plantId))
+                    .addOnFailureListener(e -> Log.w(TAG, "Eroare la salvarea plantei", e));
+        } else {
+            Log.w(TAG, "ID-ul plantei este null sau gol. Planta NU a fost salvată.");
+        }
+
     }
 
     public void savePlantWithImage(Bitmap bitmap, PlantDetailsResponse details) {

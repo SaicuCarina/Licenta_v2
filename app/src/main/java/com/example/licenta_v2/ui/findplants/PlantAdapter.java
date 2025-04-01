@@ -32,13 +32,18 @@ public class PlantAdapter extends RecyclerView.Adapter<PlantAdapter.PlantViewHol
         ImageView imageView;
         TextView nameView;
         ImageView favoriteButton;
+        TextView lightSummaryView;
+        TextView careLevelView;
 
         public PlantViewHolder(View itemView) {
             super(itemView);
             imageView = itemView.findViewById(R.id.plantImage);
             nameView = itemView.findViewById(R.id.plantName);
             favoriteButton = itemView.findViewById(R.id.favoriteButton);
+            lightSummaryView = itemView.findViewById(R.id.plantLightSummary);
+            careLevelView = itemView.findViewById(R.id.plantCareLevel);
         }
+
     }
 
     @NonNull
@@ -52,6 +57,10 @@ public class PlantAdapter extends RecyclerView.Adapter<PlantAdapter.PlantViewHol
     public void onBindViewHolder(@NonNull PlantViewHolder holder, int position) {
         PlantDetailsResponse plant = plantList.get(position);
         holder.nameView.setText(plant.getCommonName());
+        holder.nameView.setText(plant.getCommonName());
+        holder.lightSummaryView.setText(plant.getLightSummary());
+        holder.careLevelView.setText(plant.getCareLevel());
+
 
         String imageUrl = plant.getImageUrl();
         Log.d("PlantAdapter", "Plant: " + plant.getCommonName() + " - imageUrl=" + imageUrl);

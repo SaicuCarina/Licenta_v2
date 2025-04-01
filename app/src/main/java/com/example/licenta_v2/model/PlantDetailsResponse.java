@@ -3,18 +3,20 @@ package com.example.licenta_v2.model;
 import java.util.List;
 
 public class PlantDetailsResponse {
+    private String id;
     private String common_name;
     private String scientificName;
     private Description description;
     private String family;
     private Taxonomy taxonomy;
     private List<String> synonyms;
-    private List<String> edibleParts;
+    private List<String> edible_parts;
     private Watering watering;
-    private List<String> propagationMethods;
-    private String bestLightCondition;
+    private List<String> propagation_methods;
+    private String best_light_condition;
     private String imageUrl;
     private boolean isFavorite = false;
+    private String wateringInterval;
 
     public boolean isFavorite() {
         return isFavorite;
@@ -43,28 +45,39 @@ public class PlantDetailsResponse {
         this.synonyms = synonyms;
     }
 
-    public void setEdibleParts(List<String> edibleParts) {
-        this.edibleParts = edibleParts;
+    public void setEdibleParts(List<String> edible_parts) {
+        this.edible_parts = edible_parts;
     }
 
     public void setWatering(Watering watering) {
         this.watering = watering;
     }
 
-    public void setPropagationMethods(List<String> propagationMethods) {
-        this.propagationMethods = propagationMethods;
+    public void setPropagationMethods(List<String> propagation_methods) {
+        this.propagation_methods = propagation_methods;
     }
 
-    public void setBestLightCondition(String bestLightCondition) {
-        this.bestLightCondition = bestLightCondition;
+    public void setBestLightCondition(String best_light_condition) {
+        this.best_light_condition = best_light_condition;
     }
 
+    public void setId(String id) {
+        this.id = id;
+    }
 
+    public void setWateringInterval(String wateringInterval){
+        this.wateringInterval = wateringInterval;
+    }
+
+    public String getId() {
+        return id;
+    }
+    public String getWateringInterval() { return wateringInterval; }
     public String getCommonName() {
         return common_name;
     }
     public String getBestLightCondition() {
-        return bestLightCondition;
+        return best_light_condition;
     }
     public String getScientificName() {
         return scientificName;
@@ -96,7 +109,7 @@ public class PlantDetailsResponse {
     }
 
     public List<String> getEdibleParts() {
-        return edibleParts;
+        return edible_parts;
     }
 
     public Watering getWatering() {
@@ -104,8 +117,11 @@ public class PlantDetailsResponse {
     }
 
     public List<String> getPropagationMethods() {
-        return propagationMethods;
+        return propagation_methods;
     }
+    private String lightSummary;
+    private String careLevel;
+
 
     @Override
     public String toString() {
@@ -117,15 +133,29 @@ public class PlantDetailsResponse {
                 ", image_url='" + imageUrl + '\'' +
                 ", taxonomy=" + taxonomy +
                 ", synonyms=" + synonyms +
-                ", edible_parts=" + edibleParts +
+                ", edible_parts=" + edible_parts +
                 ", watering=" + (watering != null ? watering.toString() : "null") +
-                ", propagation_methods=" + propagationMethods +
-                ", best_light_condition='" + bestLightCondition + '\'' +
+                ", propagation_methods=" + propagation_methods +
+                ", best_light_condition='" + best_light_condition + '\'' +
         '}';
     }
 
     public void setCommonName(String common_name) {
         this.common_name = common_name;
+    }
+
+    public void setLightSummary(String lightSummary) {
+        this.lightSummary = lightSummary;
+    }
+    public String getLightSummary() {
+        return lightSummary;
+    }
+
+    public void setCareLevel(String careLevel) {
+        this.careLevel = careLevel;
+    }
+    public String getCareLevel() {
+        return careLevel;
     }
 
 

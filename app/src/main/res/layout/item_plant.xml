@@ -1,40 +1,83 @@
-<?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="4dp">
+    android:layout_margin="4dp"
+    android:orientation="vertical">
 
-    <ImageView
-        android:id="@+id/plantImage"
+    <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="180dp"
-        android:scaleType="centerCrop"
-        android:contentDescription="Plant Image" />
+        android:layout_height="180dp">
 
-    <!-- Favorite button in top-right -->
-    <ImageView
-        android:id="@+id/favoriteButton"
-        android:layout_width="32dp"
-        android:layout_height="32dp"
-        android:layout_gravity="top|end"
-        android:layout_margin="8dp"
-        android:src="@drawable/favorite_border"
-        android:contentDescription="Favorite Icon"
-        android:background="?attr/selectableItemBackgroundBorderless"
-        android:padding="4dp" />
+        <ImageView
+            android:id="@+id/plantImage"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="centerCrop"
+            android:contentDescription="Plant Image" />
 
-    <!-- Text below image -->
+        <!-- Gradient shadow in bottom -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:layout_gravity="bottom"
+            android:background="@drawable/bottom_gradient" />
+
+        <!-- Favorite button in top-right -->
+        <ImageView
+            android:id="@+id/favoriteButton"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_gravity="top|end"
+            android:layout_margin="8dp"
+            android:src="@drawable/favorite_border"
+            android:contentDescription="Favorite Icon"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:padding="4dp" />
+
+        <!-- Plant Name in image -->
+        <TextView
+            android:id="@+id/plantName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:layout_marginBottom="8dp"
+            android:text="Plant Name"
+            android:textColor="@android:color/white"
+            android:textSize="16sp"
+            android:gravity="center" />
+    </FrameLayout>
+
+    <!-- Light Summary -->
     <TextView
-        android:id="@+id/plantName"
+        android:id="@+id/plantLightSummary"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="bottom"
-        android:layout_marginTop="8dp"
-        android:padding="8dp"
-        android:text="Plant Name"
-        android:gravity="center"
-        android:textColor="@android:color/black"
-        android:textSize="16sp"
-        android:background="@android:color/white" />
-</FrameLayout>
+        android:paddingStart="8dp"
+        android:paddingEnd="8dp"
+        android:paddingTop="4dp"
+        android:paddingBottom="4dp"
+        android:text="Light summary"
+        android:gravity="center_vertical"
+        android:textColor="@android:color/darker_gray"
+        android:textSize="14sp"
+        android:background="@android:color/white"
+        android:drawableStart="@drawable/sun"
+        android:drawablePadding="6dp" />
 
+    <!-- Care Level -->
+    <TextView
+        android:id="@+id/plantCareLevel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingStart="8dp"
+        android:paddingEnd="8dp"
+        android:paddingTop="0dp"
+        android:paddingBottom="8dp"
+        android:text="Care Level"
+        android:gravity="center_vertical"
+        android:textColor="@android:color/darker_gray"
+        android:textSize="14sp"
+        android:background="@android:color/white"
+        android:drawableStart="@drawable/water_drop"
+        android:drawablePadding="6dp" />
+</LinearLayout>

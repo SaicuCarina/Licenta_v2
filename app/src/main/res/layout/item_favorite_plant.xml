@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -7,6 +6,7 @@
     android:background="@android:color/white"
     android:layout_marginVertical="6dp">
 
+    <!-- Imagine plantă -->
     <ImageView
         android:id="@+id/plantImage"
         android:layout_width="100dp"
@@ -16,6 +16,7 @@
         android:background="@drawable/card_background"
         android:layout_marginEnd="12dp" />
 
+    <!-- Informații plantă -->
     <LinearLayout
         android:layout_width="0dp"
         android:layout_height="match_parent"
@@ -23,6 +24,7 @@
         android:orientation="vertical"
         android:gravity="center_vertical">
 
+        <!-- Nume plantă -->
         <TextView
             android:id="@+id/plantName"
             android:layout_width="wrap_content"
@@ -30,8 +32,30 @@
             android:text="Plant Name"
             android:textSize="18sp"
             android:textStyle="bold"
-            android:textColor="@android:color/black" />
+            android:textColor="@android:color/black"
+            android:layout_marginBottom="6dp" />
 
+        <!-- Light Summary -->
+        <TextView
+            android:id="@+id/plantLightSummary"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Light summary"
+            android:textColor="#555555"
+            android:textSize="14sp"
+            android:drawableStart="@drawable/sun"
+            android:drawablePadding="6dp"
+            android:paddingBottom="2dp" />
+
+        <!-- Care Level -->
+        <TextView
+            android:id="@+id/plantCareLevel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Care level"
+            android:textColor="#555555"
+            android:textSize="14sp"
+            android:drawableStart="@drawable/water_drop"
+            android:drawablePadding="6dp" />
     </LinearLayout>
-
 </LinearLayout>

@@ -59,7 +59,6 @@ public class PlantDatabase {
         UploadTask uploadTask = imageRef.putBytes(imageData);
         uploadTask.addOnSuccessListener(taskSnapshot -> {
             imageRef.getDownloadUrl().addOnSuccessListener(uri -> {
-                // ✅ aici salvăm URL-ul în model și apoi în Firestore
                 details.setImageUrl(uri.toString());
                 savePlantToFirebase(details);
             });

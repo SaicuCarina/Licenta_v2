@@ -30,6 +30,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.licenta_v2.R;
 import com.example.licenta_v2.model.PlantDetailsResponse;
+import com.example.licenta_v2.ui.details.PlantDetailsFragment;
 import com.example.licenta_v2.ui.favorites.FavoritesFragment;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
@@ -174,7 +175,14 @@ public class FindPlantsFragment extends Fragment {
         int spacingInPixels = getResources().getDimensionPixelSize(R.dimen.grid_spacing);
         recyclerView.setLayoutManager(new GridLayoutManager(requireContext(), 2));
         recyclerView.addItemDecoration(new GridSpacingItemDecoration(2, spacingInPixels, true));
-        adapter = new PlantAdapter(plantList);
+        adapter = new PlantAdapter(plantList, plant -> {
+            requireActivity().getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.frame_layout, PlantDetailsFragment.newInstance(plant))
+                    .addToBackStack(null)
+                    .commit();
+        });
+
         recyclerView.setAdapter(adapter);
 
         loadPlantsFromFirebase();
@@ -223,11 +231,17 @@ public class FindPlantsFragment extends Fragment {
     }
 
     private void showPlantDetails(PlantDetailsResponse details) {
-        String info = "Identified: " + details.getCommonName();
-        Log.d("PlantAPI", "Details received: " + details.toString());
-        Toast.makeText(requireContext(), info, Toast.LENGTH_LONG).show();
-        // TODO: aici poți adăuga navigare spre un fragment de detalii în viitor
+        new Handler(Looper.getMainLooper()).post(() -> {
+            requireActivity().getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.frame_layout, PlantDetailsFragment.newInstance(details))
+                    .addToBackStack(null)
+                    .commit();
+
+            viewModel.setPlantDetails(null);
+        });
     }
+
 
     private String convertBitmapToBase64(Bitmap bitmap) {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();

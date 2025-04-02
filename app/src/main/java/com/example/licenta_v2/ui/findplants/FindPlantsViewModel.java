@@ -37,28 +37,35 @@ public class FindPlantsViewModel extends ViewModel {
                         details.setCareLevel("Unknown");
                     }
                 }
-                String lightSummary = generateLightSummary(details.getBestLightCondition());
-                details.setLightSummary(lightSummary);
+                details.setLightSummary(generateLightSummary(details.getBestLightCondition()));
 
-                if (details.getId() != null && !details.getId().isEmpty()) {
-                    FirebaseFirestore.getInstance()
-                            .collection("plants")
-                            .document(details.getId())
-                            .set(details)
-                            .addOnSuccessListener(unused ->
-                                    plantDetails.setValue(details)
-                            );
-                } else {
-                    FirebaseFirestore.getInstance()
-                            .collection("plants")
-                            .document(details.getCommonName())
-                            .set(details)
-                            .addOnSuccessListener(unused ->
-                                    plantDetails.setValue(details)
-                            );
-                }
+                String documentId = (details.getId() != null && !details.getId().isEmpty())
+                        ? details.getId()
+                        : details.getCommonName();
 
+                FirebaseFirestore.getInstance()
+                        .collection("plants")
+                        .document(documentId)
+                        .get()
+                        .addOnSuccessListener(snapshot -> {
+                            if (snapshot.exists()) {
+                                PlantDetailsResponse existingPlant = snapshot.toObject(PlantDetailsResponse.class);
+                                plantDetails.setValue(existingPlant);
+                            } else {
+                                FirebaseFirestore.getInstance()
+                                        .collection("plants")
+                                        .document(documentId)
+                                        .set(details)
+                                        .addOnSuccessListener(unused -> plantDetails.setValue(details));
+                            }
+                        })
+                        .addOnFailureListener(e -> {
+                            Log.e("FirebaseCheck", "Eroare verificare plant existenta: " + e.getMessage());
+                            // fallback: continuăm cu ce avem
+                            plantDetails.setValue(details);
+                        });
             }
+
             @Override
             public void onError(String error) {
                 isLoading.setValue(false);
@@ -123,5 +130,9 @@ public class FindPlantsViewModel extends ViewModel {
 
     public LiveData<String> getErrorMessage() {
         return errorMessage;
+    }
+
+    public void setPlantDetails(PlantDetailsResponse details) {
+        plantDetails.setValue(details);
     }
 }

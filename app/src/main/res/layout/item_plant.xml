@@ -15,14 +15,17 @@
             android:scaleType="centerCrop"
             android:contentDescription="Plant Image" />
 
-        <!-- Gradient shadow in bottom -->
         <View
             android:layout_width="match_parent"
             android:layout_height="60dp"
             android:layout_gravity="bottom"
             android:background="@drawable/bottom_gradient" />
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:layout_gravity="top"
+            android:background="@drawable/start_gradient" />
 
-        <!-- Favorite button in top-right -->
         <ImageView
             android:id="@+id/favoriteButton"
             android:layout_width="32dp"
@@ -34,7 +37,6 @@
             android:background="?attr/selectableItemBackgroundBorderless"
             android:padding="4dp" />
 
-        <!-- Plant Name in image -->
         <TextView
             android:id="@+id/plantName"
             android:layout_width="match_parent"
@@ -47,7 +49,6 @@
             android:gravity="center" />
     </FrameLayout>
 
-    <!-- Light Summary -->
     <TextView
         android:id="@+id/plantLightSummary"
         android:layout_width="match_parent"
@@ -58,13 +59,12 @@
         android:paddingBottom="4dp"
         android:text="Light summary"
         android:gravity="center_vertical"
-        android:textColor="@android:color/darker_gray"
+        android:textColor="#555555"
         android:textSize="14sp"
         android:background="@android:color/white"
         android:drawableStart="@drawable/sun"
         android:drawablePadding="6dp" />
 
-    <!-- Care Level -->
     <TextView
         android:id="@+id/plantCareLevel"
         android:layout_width="match_parent"
@@ -75,7 +75,7 @@
         android:paddingBottom="8dp"
         android:text="Care Level"
         android:gravity="center_vertical"
-        android:textColor="@android:color/darker_gray"
+        android:textColor="#555555"
         android:textSize="14sp"
         android:background="@android:color/white"
         android:drawableStart="@drawable/water_drop"

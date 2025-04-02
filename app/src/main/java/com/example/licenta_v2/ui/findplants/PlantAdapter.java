@@ -22,10 +22,17 @@ import java.util.List;
 
 public class PlantAdapter extends RecyclerView.Adapter<PlantAdapter.PlantViewHolder> {
     private List<PlantDetailsResponse> plantList;
+    private OnItemClickListener listener;
+
     private final FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
 
-    public PlantAdapter(List<PlantDetailsResponse> plantList) {
+    public interface OnItemClickListener {
+        void onItemClick(PlantDetailsResponse plant);
+    }
+
+    public PlantAdapter(List<PlantDetailsResponse> plantList, OnItemClickListener listener) {
         this.plantList = plantList;
+        this.listener = listener;
     }
 
     public static class PlantViewHolder extends RecyclerView.ViewHolder {
@@ -74,6 +81,13 @@ public class PlantAdapter extends RecyclerView.Adapter<PlantAdapter.PlantViewHol
             holder.imageView.setImageResource(R.drawable.ic_launcher_background);
         }
 
+        holder.itemView.setOnClickListener(v -> {
+            if (listener != null) {
+                listener.onItemClick(plant);
+            }
+        });
+
+
         updateFavoriteIcon(holder.favoriteButton, plant.isFavorite());
 
         holder.favoriteButton.setOnClickListener(v -> {
@@ -85,7 +99,7 @@ public class PlantAdapter extends RecyclerView.Adapter<PlantAdapter.PlantViewHol
     }
 
     private void updateFavoriteIcon(ImageView icon, boolean isFavorite) {
-        icon.setImageResource(isFavorite ? R.drawable.favorite : R.drawable.favorite_border);
+        icon.setImageResource(isFavorite ? R.drawable.favorite_red : R.drawable.favorite_border);
     }
 
     private void updateFavoriteInFirestore(PlantDetailsResponse plant) {

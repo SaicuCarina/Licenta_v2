@@ -1,8 +1,9 @@
 package com.example.licenta_v2.model;
 
+import java.io.Serializable;
 import java.util.List;
 
-public class PlantDetailsResponse {
+public class PlantDetailsResponse implements Serializable {
     private String id;
     private String common_name;
     private String scientificName;

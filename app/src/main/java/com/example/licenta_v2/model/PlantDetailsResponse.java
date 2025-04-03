@@ -18,10 +18,19 @@ public class PlantDetailsResponse implements Serializable {
     private String imageUrl;
     private boolean isFavorite = false;
     private String wateringInterval;
+    private String best_watering;
+    private String best_soil_type;
+    private String toxicity;
+    private String cultural_significance;
+    private List<String> gpt;
+    private int toxic;
+
 
     public boolean isFavorite() {
         return isFavorite;
     }
+
+    public void setToxic(int toxic) { this.toxic = toxic; }
 
     public void setFavorite(boolean favorite) {
         isFavorite = favorite;
@@ -69,11 +78,15 @@ public class PlantDetailsResponse implements Serializable {
     public void setWateringInterval(String wateringInterval){
         this.wateringInterval = wateringInterval;
     }
+    public void setToxicity(String toxicity){
+        this.toxicity = toxicity;
+    }
 
     public String getId() {
         return id;
     }
     public String getWateringInterval() { return wateringInterval; }
+    public int getToxic() { return toxic; }
     public String getCommonName() {
         return common_name;
     }
@@ -117,6 +130,19 @@ public class PlantDetailsResponse implements Serializable {
         return watering;
     }
 
+    public String getBest_watering() { return best_watering; }
+    public String getBest_soil_type() { return best_soil_type; }
+    public String getToxicity() { return toxicity; }
+    public String getCultural_significance() { return cultural_significance; }
+
+    public List<String> getGpt() {
+        return gpt;
+    }
+
+    public void setGpt(List<String> gpt) {
+        this.gpt = gpt;
+    }
+
     public List<String> getPropagationMethods() {
         return propagation_methods;
     }
@@ -138,6 +164,10 @@ public class PlantDetailsResponse implements Serializable {
                 ", watering=" + (watering != null ? watering.toString() : "null") +
                 ", propagation_methods=" + propagation_methods +
                 ", best_light_condition='" + best_light_condition + '\'' +
+                ", best_watering='" + best_watering + '\'' +
+                ", best_soil_type='" + best_soil_type + '\'' +
+                ", toxicity='" + toxicity + '\'' +
+                ", cultural_significance='" + cultural_significance + '\'' +
         '}';
     }
 
@@ -158,7 +188,6 @@ public class PlantDetailsResponse implements Serializable {
     public String getCareLevel() {
         return careLevel;
     }
-
 
     public static class Description {
         private String value;

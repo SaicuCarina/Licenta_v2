@@ -38,6 +38,7 @@ public class FindPlantsViewModel extends ViewModel {
                     }
                 }
                 details.setLightSummary(generateLightSummary(details.getBestLightCondition()));
+                details.setToxic(getToxicityLevel(details.getToxicity()));
 
                 String documentId = (details.getId() != null && !details.getId().isEmpty())
                         ? details.getId()
@@ -116,6 +117,48 @@ public class FindPlantsViewModel extends ViewModel {
 
         return "Unknown";
     }
+
+    public int getToxicityLevel(String toxicity) {
+        if (toxicity == null || toxicity.trim().isEmpty()) {
+            return 0;
+        }
+
+        String value = toxicity.toLowerCase();
+
+        String[] nonToxicPatterns = {
+                "not toxic",
+                "non-toxic",
+                "not poisonous",
+                "is not toxic",
+                "is non-toxic"
+        };
+
+        for (String pattern : nonToxicPatterns) {
+            if (value.contains(pattern)) {
+                return 0;
+            }
+        }
+
+        String[] toxicPatterns = {
+                "mildly toxic",
+                "extremely poisonous",
+                "is toxic",
+                "poisonous",
+                "toxic"
+        };
+
+        for (String pattern : toxicPatterns) {
+            if (value.contains(pattern)) {
+                return 1;
+            }
+        }
+
+        return 0;
+    }
+
+
+
+
 
 
 

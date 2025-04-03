@@ -33,6 +33,11 @@ public class PlantDatabase {
         plantData.put("watering", details.getWatering());
         plantData.put("propagationMethods", details.getPropagationMethods());
         plantData.put("bestLightCondition",details.getBestLightCondition());
+        plantData.put("best_watering", details.getBest_watering());
+        plantData.put("best_soil_type", details.getBest_soil_type());
+        plantData.put("toxicity", details.getToxicity());
+        plantData.put("cultural_significance", details.getCultural_significance());
+        plantData.put("gpt", details.getGpt());
 
         String plantId = details.getId();
         if (plantId != null && !plantId.isEmpty()) {

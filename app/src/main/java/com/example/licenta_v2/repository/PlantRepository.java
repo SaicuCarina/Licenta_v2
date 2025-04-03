@@ -66,7 +66,7 @@ public class PlantRepository {
             apiService.checkIdentificationStatus(
                     accessToken,
                     API_KEY,
-                    "common_names,url,description,taxonomy,rank,gbif_id,inaturalist_id,image,synonyms,edible_parts,watering,propagation_methods,best_light_condition",
+                    "common_names,url,description,taxonomy,rank,gbif_id,inaturalist_id,image,synonyms,edible_parts,watering,propagation_methods,best_light_condition,best_watering,best_soil_type,toxicity,cultural_significance,gpt",
                     "en"
             ).enqueue(new Callback<IdentificationResultResponse>() {
                 @Override

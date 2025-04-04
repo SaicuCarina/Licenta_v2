@@ -1,19 +1,65 @@
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <ImageView
-        android:id="@+id/plantImageDetails"
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/appbar_layout"
         android:layout_width="match_parent"
-        android:layout_height="250dp"
-        android:scaleType="centerCrop"
-        android:layout_gravity="top" />
+        android:layout_height="wrap_content"
+        android:elevation="0dp"
+        android:background="@android:color/white"
+        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar">
 
-    <ScrollView
+        <com.google.android.material.appbar.CollapsingToolbarLayout
+            android:id="@+id/collapsing_toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="300dp"
+            android:fitsSystemWindows="true"
+            app:layout_scrollFlags="scroll|exitUntilCollapsed"
+            app:titleEnabled="true">
+
+            <ImageView
+                android:id="@+id/plantImageDetails"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="centerCrop"
+                android:contentDescription="@string/app_name"
+                app:layout_collapseMode="parallax" />
+
+            <androidx.appcompat.widget.Toolbar
+                android:id="@+id/toolbar"
+                android:layout_width="match_parent"
+                android:layout_height="?attr/actionBarSize"
+                app:layout_collapseMode="pin"
+                app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
+        </com.google.android.material.appbar.CollapsingToolbarLayout>
+
+        <com.google.android.material.tabs.TabLayout
+            android:id="@+id/stickySectionTabs"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@android:color/white"
+            android:elevation="0dp"
+            android:outlineProvider="none"
+            android:stateListAnimator="@null"
+            android:padding="0dp"
+            android:layout_margin="0dp"
+            app:tabMode="scrollable"
+            app:tabIndicatorColor="#006B3C"
+            app:tabTextColor="#000000"
+            app:tabSelectedTextColor="#006B3C"
+            app:layout_scrollFlags="enterAlways" />
+
+
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/scroll"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginTop="250dp"
-        android:padding="16dp">
+        android:padding="16dp"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
         <LinearLayout
             android:orientation="vertical"
@@ -28,6 +74,16 @@
                 android:textStyle="bold"
                 android:textColor="#000000"
                 android:layout_marginBottom="8dp" />
+
+            <com.google.android.flexbox.FlexboxLayout
+                android:id="@+id/gptTagsLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:layout_marginTop="4dp"
+                app:flexWrap="wrap"
+                app:justifyContent="flex_start"
+                app:alignItems="flex_start" />
 
             <TextView
                 android:id="@+id/plantSynonyms"
@@ -64,11 +120,11 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:drawableStart="@drawable/plant_care_gray"
+                    android:drawableStart="@drawable/plant_care"
                     android:drawablePadding="8dp"
                     android:padding="4dp"
                     android:text="Care Level"
-                    android:textColor="#555555"
+                    android:textColor="#000000"
                     android:textSize="14sp" />
 
                 <TextView
@@ -76,50 +132,226 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:drawableStart="@drawable/water_drop"
+                    android:drawableStart="@drawable/water_drop_black"
                     android:drawablePadding="8dp"
                     android:padding="4dp"
                     android:text="Watering Interval"
-                    android:textColor="#555555"
+                    android:textColor="#000000"
                     android:textSize="14sp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="16dp"
+                android:gravity="center_vertical">
+
+                <TextView
+                    android:id="@+id/lightSummary"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:drawableStart="@drawable/sun_black"
+                    android:drawablePadding="8dp"
+                    android:padding="4dp"
+                    android:text="Light"
+                    android:textColor="#000000"
+                    android:textSize="14sp" />
+
+                <TextView
+                    android:id="@+id/toxicity"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:drawableStart="@drawable/toxic_green"
+                    android:drawablePadding="8dp"
+                    android:padding="4dp"
+                    android:text="Toxicity"
+                    android:textColor="#000000"
+                    android:textSize="14sp" />
+
             </LinearLayout>
 
             <TextView
                 android:id="@+id/descriptionTitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Description:"
+                android:text="Description"
                 android:textStyle="bold"
-                android:textSize="16sp"
+                android:textSize="24sp"
                 android:textColor="#000000"
-                android:layout_marginBottom="4dp"
-                android:layout_marginTop="8dp" />
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="4dp" />
 
             <TextView
                 android:id="@+id/plantDescription"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Descriptione"
                 android:textColor="#444444"
                 android:textSize="15sp"
                 android:lineSpacingExtra="4dp"
                 android:layout_marginBottom="16dp" />
 
+            <TextView
+                android:id="@+id/wateringTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Watering"
+                android:textStyle="bold"
+                android:textSize="24sp"
+                android:textColor="#000000"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="4dp" />
 
+            <TextView
+                android:id="@+id/bestWatering"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="#444444"
+                android:textSize="15sp"
+                android:lineSpacingExtra="4dp"
+                android:layout_marginBottom="16dp" />
 
+            <TextView
+                android:id="@+id/lightTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Light"
+                android:textStyle="bold"
+                android:textSize="24sp"
+                android:textColor="#000000"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="4dp" />
+
+            <TextView
+                android:id="@+id/bestLight"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="#444444"
+                android:textSize="15sp"
+                android:lineSpacingExtra="4dp"
+                android:layout_marginBottom="16dp" />
+
+            <TextView
+                android:id="@+id/soilTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Soil"
+                android:textStyle="bold"
+                android:textSize="24sp"
+                android:textColor="#000000"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="4dp" />
+
+            <TextView
+                android:id="@+id/bestSoil"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="#444444"
+                android:textSize="15sp"
+                android:lineSpacingExtra="4dp"
+                android:layout_marginBottom="16dp" />
+
+            <TextView
+                android:id="@+id/ediblePartsTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Edible Parts"
+                android:textStyle="bold"
+                android:textSize="24sp"
+                android:textColor="#000000"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="4dp"
+                android:visibility="gone" />
+
+            <TextView
+                android:id="@+id/edibleParts"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="#444444"
+                android:textSize="15sp"
+                android:lineSpacingExtra="4dp"
+                android:layout_marginBottom="8dp"
+                android:visibility="gone" />
+
+            <TextView
+                android:id="@+id/propagationTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Propagation Methods"
+                android:textStyle="bold"
+                android:textSize="24sp"
+                android:textColor="#000000"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="4dp"
+                android:visibility="gone" />
+
+            <TextView
+                android:id="@+id/propagationMethods"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="#444444"
+                android:textSize="15sp"
+                android:lineSpacingExtra="4dp"
+                android:layout_marginBottom="8dp"
+                android:visibility="gone" />
+
+            <TextView
+                android:id="@+id/toxicityExtraTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Toxicity"
+                android:textStyle="bold"
+                android:textSize="24sp"
+                android:textColor="#000000"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="4dp"
+                android:visibility="gone" />
+
+            <TextView
+                android:id="@+id/toxicityTextExtra"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="#444444"
+                android:textSize="15sp"
+                android:lineSpacingExtra="4dp"
+                android:layout_marginBottom="60dp"
+                android:visibility="gone" />
         </LinearLayout>
-    </ScrollView>
+    </androidx.core.widget.NestedScrollView>
+    <LinearLayout
+        android:id="@+id/bottomActionBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:background="#A8D5BA"
+        android:orientation="horizontal"
+        android:padding="12dp"
+        android:elevation="8dp"
+        android:gravity="center">
 
-    <ImageView
-        android:id="@+id/back_button"
-        android:layout_width="30sp"
-        android:layout_height="30sp"
-        android:layout_gravity="top|start"
-        android:layout_marginTop="40px"
-        android:layout_marginStart="16dp"
-        android:src="@drawable/arrow_back"
-        android:contentDescription="Back"
-        android:clickable="true"
-        android:focusable="true" />
+        <ImageView
+            android:id="@+id/favoriteButtonDetails"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/favorite_border"
+            android:contentDescription="Favorite"
+            android:padding="8dp" />
 
-</FrameLayout>
+        <Button
+            android:id="@+id/addPlantButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Add Plant"
+            android:textAllCaps="false"
+            android:layout_marginStart="16dp"
+            android:backgroundTint="#175202"
+            android:textColor="@android:color/white"
+            android:background="@drawable/rounded_corner"
+            android:padding="12dp" />
+    </LinearLayout>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

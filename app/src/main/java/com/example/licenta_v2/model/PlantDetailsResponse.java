@@ -189,6 +189,10 @@ public class PlantDetailsResponse implements Serializable {
         return careLevel;
     }
 
+    public String getBestSoilType() { return best_soil_type; }
+
+    public String getBestWatering() { return best_watering; }
+
     public static class Description {
         private String value;
         private String citation;

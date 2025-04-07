@@ -146,7 +146,7 @@ public class PlantDetailsFragment extends Fragment {
             int smallestDistance = Integer.MAX_VALUE;
             int currentSectionIndex = -1;
 
-            int scrollThreshold = 20;
+            int scrollThreshold = 25;
 
             for (int i = 0; i < sections.length; i++) {
                 if (sections[i] == null) continue;
@@ -172,7 +172,7 @@ public class PlantDetailsFragment extends Fragment {
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
                 if (isProgrammaticTabChange) {
-                    isProgrammaticTabChange = false; // resetăm flagul și nu facem scroll
+                    isProgrammaticTabChange = false;
                     return;
                 }
 
@@ -189,13 +189,21 @@ public class PlantDetailsFragment extends Fragment {
                 }
 
                 if (targetView != null) {
+                    isProgrammaticScroll = true;
+
                     scrollView.post(() -> {
                         AppBarLayout appBar = requireActivity().findViewById(R.id.appbar_layout);
                         appBar.setExpanded(false, true);
-                        scrollView.postDelayed(() -> scrollView.smoothScrollTo(0, targetView.getTop()), 200);
+
+                        scrollView.postDelayed(() -> {
+                            scrollView.smoothScrollTo(0, targetView.getTop());
+
+                            scrollView.postDelayed(() -> isProgrammaticScroll = false, 500);
+                        }, 100);
                     });
                 }
             }
+
 
             @Override public void onTabUnselected(TabLayout.Tab tab) {}
             @Override public void onTabReselected(TabLayout.Tab tab) {}

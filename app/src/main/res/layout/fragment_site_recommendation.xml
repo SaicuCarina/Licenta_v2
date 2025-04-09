@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <!-- Săgeată de întoarcere fixată sus -->
+    <ImageView
+        android:id="@+id/back_site_recommendation"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="48px"
+        android:layout_marginStart="16dp"
+        android:contentDescription="Back"
+        android:src="@drawable/arrow_back" />
+
+    <!-- Titlu fix sus -->
+    <TextView
+        android:id="@+id/title_recommendations"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|center_horizontal"
+        android:layout_marginTop="120px"
+        android:text="Recommended Sites"
+        android:textSize="30sp"
+        android:textColor="@color/black" />
+
+    <!-- Spinner de loading -->
+    <ProgressBar
+        android:id="@+id/loadingSpinner"
+        style="?android:attr/progressBarStyleLarge"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:visibility="visible" />
+
+    <!-- Conținut scrollabil sub header -->
+    <ScrollView
+        android:id="@+id/scrollableContent"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="100dp"
+        android:padding="16dp"
+        android:visibility="gone">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <!-- Titlu + thumbs up -->
+            <TextView
+                android:id="@+id/recommendedTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Recommended"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:paddingBottom="8dp"
+                android:textColor="#4CAF50"
+                android:drawableStart="@drawable/thumb_up"
+                android:drawablePadding="8dp" />
+
+            <!-- Grid cu 2 coloane pentru recommended -->
+            <GridLayout
+                android:id="@+id/recommendedContainer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:columnCount="2"
+                android:useDefaultMargins="true"
+                android:alignmentMode="alignMargins"
+                android:layout_marginBottom="24dp" />
+
+            <!-- Titlu + thumbs down -->
+            <TextView
+                android:id="@+id/notRecommendedTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Not Recommended"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:paddingBottom="8dp"
+                android:textColor="#F44336"
+                android:drawableStart="@drawable/thumb_down"
+                android:drawablePadding="8dp" />
+
+            <!-- Grid cu 2 coloane pentru not recommended -->
+            <GridLayout
+                android:id="@+id/notRecommendedContainer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:columnCount="2"
+                android:useDefaultMargins="true"
+                android:alignmentMode="alignMargins" />
+
+        </LinearLayout>
+    </ScrollView>
+</FrameLayout>

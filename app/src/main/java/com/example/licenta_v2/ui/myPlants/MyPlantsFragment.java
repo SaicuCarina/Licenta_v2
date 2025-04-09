@@ -1,4 +1,4 @@
-package com.example.licenta_v2.ui.home;
+package com.example.licenta_v2.ui.myPlants;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;

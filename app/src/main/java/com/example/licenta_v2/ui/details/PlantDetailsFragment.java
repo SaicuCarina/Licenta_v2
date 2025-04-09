@@ -7,9 +7,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -21,6 +19,7 @@ import androidx.fragment.app.Fragment;
 import com.bumptech.glide.Glide;
 import com.example.licenta_v2.R;
 import com.example.licenta_v2.model.PlantDetailsResponse;
+import com.example.licenta_v2.ui.myPlants.SiteRecommendationFragment;
 import com.google.android.flexbox.FlexboxLayout;
 import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.appbar.CollapsingToolbarLayout;
@@ -146,7 +145,7 @@ public class PlantDetailsFragment extends Fragment {
             int smallestDistance = Integer.MAX_VALUE;
             int currentSectionIndex = -1;
 
-            int scrollThreshold = 25;
+            int scrollThreshold = 200;
 
             for (int i = 0; i < sections.length; i++) {
                 if (sections[i] == null) continue;
@@ -189,18 +188,19 @@ public class PlantDetailsFragment extends Fragment {
                 }
 
                 if (targetView != null) {
-                    isProgrammaticScroll = true;
-
                     scrollView.post(() -> {
+                        isProgrammaticScroll = true;
+
                         AppBarLayout appBar = requireActivity().findViewById(R.id.appbar_layout);
                         appBar.setExpanded(false, true);
 
                         scrollView.postDelayed(() -> {
                             scrollView.smoothScrollTo(0, targetView.getTop());
 
-                            scrollView.postDelayed(() -> isProgrammaticScroll = false, 500);
-                        }, 100);
+                            scrollView.postDelayed(() -> isProgrammaticScroll = false, 400);
+                        }, 200);
                     });
+
                 }
             }
 
@@ -304,8 +304,13 @@ public class PlantDetailsFragment extends Fragment {
         });
 
         addPlantButton.setOnClickListener(v -> {
-            /// TODO: logica pentru adaugare planta
-            Toast.makeText(requireContext(), "Plant added!", Toast.LENGTH_SHORT).show();
+            Fragment fragment = SiteRecommendationFragment.newInstance(plant.getLightSummary());
+
+            requireActivity().getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.frame_layout, fragment)
+                    .addToBackStack(null)
+                    .commit();
         });
 
 

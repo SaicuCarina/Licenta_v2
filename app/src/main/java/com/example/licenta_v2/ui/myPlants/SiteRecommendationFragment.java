@@ -17,6 +17,8 @@ import androidx.fragment.app.Fragment;
 
 import com.bumptech.glide.Glide;
 import com.example.licenta_v2.R;
+import com.example.licenta_v2.model.PlantDetailsResponse;
+import com.example.licenta_v2.model.SavedPlant;
 import com.example.licenta_v2.model.Site;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -24,8 +26,11 @@ import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 public class SiteRecommendationFragment extends Fragment {
 
@@ -33,18 +38,20 @@ public class SiteRecommendationFragment extends Fragment {
     private String lightSummary;
     private List<Site> recommendedSites = new ArrayList<>();
     private List<Site> notRecommendedSites = new ArrayList<>();
-
     private GridLayout recommendedContainer;
     private GridLayout notRecommendedContainer;
     private ProgressBar loadingSpinner;
     private ScrollView scrollableContent;
+    private PlantDetailsResponse plant;
+    private SavedPlant savedPlant;
+
 
     public SiteRecommendationFragment() {}
 
-    public static SiteRecommendationFragment newInstance(String lightSummary) {
+    public static SiteRecommendationFragment newInstance(PlantDetailsResponse plant) {
         SiteRecommendationFragment fragment = new SiteRecommendationFragment();
         Bundle args = new Bundle();
-        args.putString("light_summary", lightSummary);
+        args.putSerializable("plant", plant);
         fragment.setArguments(args);
         return fragment;
     }
@@ -63,7 +70,8 @@ public class SiteRecommendationFragment extends Fragment {
         scrollableContent = view.findViewById(R.id.scrollableContent);
 
         if (getArguments() != null) {
-            lightSummary = getArguments().getString("light_summary");
+            plant = (PlantDetailsResponse) getArguments().getSerializable("plant");
+            lightSummary = plant.getLightSummary();
         }
 
         return view;
@@ -73,56 +81,98 @@ public class SiteRecommendationFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        // Ascundem nav bar-ul jos
         View bottomNav = requireActivity().findViewById(R.id.bottomNavigationView);
         if (bottomNav != null) bottomNav.setVisibility(View.GONE);
 
-        // Începem încărcarea datelor
+        View settingsIcon = requireActivity().findViewById(R.id.settings);
+        if (settingsIcon != null) settingsIcon.setVisibility(View.GONE);
+
         db = FirebaseFirestore.getInstance();
+
+        View addCustomRoomButton = view.findViewById(R.id.addCustomLocationButton);
+        addCustomRoomButton.setOnClickListener(v -> {
+            SavedPlant savedPlant = new SavedPlant();
+            savedPlant.setPlantData(plant);
+
+            AddCustomSiteFragment fragment = AddCustomSiteFragment.newInstance(savedPlant);
+            requireActivity().getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.frame_layout, fragment)
+                    .addToBackStack(null)
+                    .commit();
+        });
+
+
         loadSites();
     }
+
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
 
-        // Reafisăm nav bar-ul când ieșim
         View bottomNav = requireActivity().findViewById(R.id.bottomNavigationView);
         if (bottomNav != null) bottomNav.setVisibility(View.VISIBLE);
+
+        View settingsIcon = requireActivity().findViewById(R.id.settings);
+        if (settingsIcon != null) settingsIcon.setVisibility(View.VISIBLE);
     }
 
     private void loadSites() {
         loadingSpinner.setVisibility(View.VISIBLE);
         scrollableContent.setVisibility(View.GONE);
 
-        db.collection("sites")
-                .get()
-                .addOnSuccessListener(queryDocumentSnapshots -> {
-                    recommendedSites.clear();
-                    notRecommendedSites.clear();
+        recommendedSites.clear();
+        notRecommendedSites.clear();
 
-                    for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
-                        Site site = document.toObject(Site.class);
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (currentUser == null) return;
 
-                        if (isRecommended(site, lightSummary)) {
-                            recommendedSites.add(site);
-                        } else {
-                            notRecommendedSites.add(site);
-                        }
+        db.collection("sites").get()
+                .addOnSuccessListener(globalSnapshots -> {
+
+                    List<Site> allSites = new ArrayList<>();
+                    for (QueryDocumentSnapshot doc : globalSnapshots) {
+                        allSites.add(doc.toObject(Site.class));
                     }
 
-                    displaySites();
+                    db.collection("users")
+                            .document(currentUser.getUid())
+                            .collection("customSites")
+                            .get()
+                            .addOnSuccessListener(customSnapshots -> {
+                                for (QueryDocumentSnapshot doc : customSnapshots) {
+                                    Site site = doc.toObject(Site.class);
+                                    allSites.add(site);
+                                }
 
-                    loadingSpinner.setVisibility(View.GONE);
-                    scrollableContent.setVisibility(View.VISIBLE);
+                                for (Site site : allSites) {
+                                    if (isRecommended(site, lightSummary)) {
+                                        recommendedSites.add(site);
+                                    } else {
+                                        notRecommendedSites.add(site);
+                                    }
+                                }
+
+                                displaySites();
+                                loadingSpinner.setVisibility(View.GONE);
+                                scrollableContent.setVisibility(View.VISIBLE);
+                            })
+                            .addOnFailureListener(e -> {
+                                Toast.makeText(getContext(), "Error loading custom sites: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                                loadingSpinner.setVisibility(View.GONE);
+                                scrollableContent.setVisibility(View.VISIBLE);
+                            });
+
                 })
                 .addOnFailureListener(e -> {
                     Toast.makeText(getContext(), "Error loading sites: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-
                     loadingSpinner.setVisibility(View.GONE);
                     scrollableContent.setVisibility(View.VISIBLE);
                 });
     }
+
 
     private boolean isRecommended(Site site, String lightSummary) {
         if (lightSummary == null) return false;
@@ -163,7 +213,6 @@ public class SiteRecommendationFragment extends Fragment {
         }
     }
 
-
     private void bindSiteToView(Site site, View view) {
         TextView nameView = view.findViewById(R.id.siteName);
         ImageView imageView = view.findViewById(R.id.siteImage);
@@ -189,8 +238,8 @@ public class SiteRecommendationFragment extends Fragment {
 
     private void onSiteClicked(Site site) {
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
-        if (currentUser == null) {
-            Toast.makeText(getContext(), "User not logged in", Toast.LENGTH_SHORT).show();
+        if (currentUser == null || plant == null) {
+            Toast.makeText(getContext(), "Something went wrong.", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -198,8 +247,35 @@ public class SiteRecommendationFragment extends Fragment {
         DocumentReference plantRef = db.collection("users")
                 .document(currentUser.getUid())
                 .collection("myPlants")
-                .document(site.getName());
+                .document(plant.getCommonName());
 
-        Toast.makeText(getContext(), "Plant added to " + site.getName(), Toast.LENGTH_SHORT).show();
+        SavedPlant savedPlant = new SavedPlant();
+        savedPlant.setPlantData(plant);
+        savedPlant.setAddedSite(site.getName());
+
+        String currentDate = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
+        savedPlant.setAddedDate(currentDate);
+
+        plantRef.set(savedPlant)
+                .addOnSuccessListener(aVoid -> {
+                    Toast.makeText(getContext(), "Plant added to My Plants!", Toast.LENGTH_SHORT).show();
+
+                    View bottomNavView = requireActivity().findViewById(R.id.bottomNavigationView);
+                    if (bottomNavView instanceof com.google.android.material.bottomnavigation.BottomNavigationView) {
+                        ((com.google.android.material.bottomnavigation.BottomNavigationView) bottomNavView)
+                                .setSelectedItemId(R.id.myPlants);
+                    }
+
+                    requireActivity().getSupportFragmentManager()
+                            .beginTransaction()
+                            .replace(R.id.frame_layout, new MyPlantsFragment())
+                            .addToBackStack(null)
+                            .commit();
+                })
+                .addOnFailureListener(e ->
+                        Toast.makeText(getContext(), "Failed to add plant: " + e.getMessage(), Toast.LENGTH_SHORT).show());
     }
+
+
+
 }

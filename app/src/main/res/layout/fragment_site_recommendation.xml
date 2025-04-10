@@ -3,7 +3,6 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <!-- Săgeată de întoarcere fixată sus -->
     <ImageView
         android:id="@+id/back_site_recommendation"
         android:layout_width="wrap_content"
@@ -13,18 +12,16 @@
         android:contentDescription="Back"
         android:src="@drawable/arrow_back" />
 
-    <!-- Titlu fix sus -->
     <TextView
         android:id="@+id/title_recommendations"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="top|center_horizontal"
-        android:layout_marginTop="120px"
-        android:text="Recommended Sites"
+        android:layout_marginTop="35px"
+        android:text="Set Site"
         android:textSize="30sp"
         android:textColor="@color/black" />
 
-    <!-- Spinner de loading -->
     <ProgressBar
         android:id="@+id/loadingSpinner"
         style="?android:attr/progressBarStyleLarge"
@@ -33,12 +30,11 @@
         android:layout_gravity="center"
         android:visibility="visible" />
 
-    <!-- Conținut scrollabil sub header -->
     <ScrollView
         android:id="@+id/scrollableContent"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginTop="100dp"
+        android:layout_marginTop="60dp"
         android:padding="16dp"
         android:visibility="gone">
 
@@ -47,7 +43,6 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <!-- Titlu + thumbs up -->
             <TextView
                 android:id="@+id/recommendedTitle"
                 android:layout_width="wrap_content"
@@ -60,7 +55,6 @@
                 android:drawableStart="@drawable/thumb_up"
                 android:drawablePadding="8dp" />
 
-            <!-- Grid cu 2 coloane pentru recommended -->
             <GridLayout
                 android:id="@+id/recommendedContainer"
                 android:layout_width="match_parent"
@@ -70,7 +64,17 @@
                 android:alignmentMode="alignMargins"
                 android:layout_marginBottom="24dp" />
 
-            <!-- Titlu + thumbs down -->
+            <Button
+                android:id="@+id/addCustomLocationButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginTop="16dp"
+                android:backgroundTint="#175202"
+                android:text="Add custom location"
+                android:textColor="@color/white" />
+
+
             <TextView
                 android:id="@+id/notRecommendedTitle"
                 android:layout_width="wrap_content"
@@ -83,7 +87,6 @@
                 android:drawableStart="@drawable/thumb_down"
                 android:drawablePadding="8dp" />
 
-            <!-- Grid cu 2 coloane pentru not recommended -->
             <GridLayout
                 android:id="@+id/notRecommendedContainer"
                 android:layout_width="match_parent"

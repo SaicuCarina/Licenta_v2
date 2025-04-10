@@ -304,14 +304,22 @@ public class PlantDetailsFragment extends Fragment {
         });
 
         addPlantButton.setOnClickListener(v -> {
-            Fragment fragment = SiteRecommendationFragment.newInstance(plant.getLightSummary());
+            Fragment fragment = SiteRecommendationFragment.newInstance(plant);
 
             requireActivity().getSupportFragmentManager()
                     .beginTransaction()
+                    .setCustomAnimations(
+                            R.anim.slide_in_right,
+                            R.anim.slide_out_left,
+                            R.anim.slide_in_left,
+                            R.anim.slide_out_right
+                    )
                     .replace(R.id.frame_layout, fragment)
                     .addToBackStack(null)
                     .commit();
+
         });
+
 
 
         return view;
@@ -362,9 +370,18 @@ public class PlantDetailsFragment extends Fragment {
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        View bottomNav = requireActivity().findViewById(R.id.bottomNavigationView);
-        if (bottomNav != null) bottomNav.setVisibility(View.VISIBLE);
-        View settingsIcon = requireActivity().findViewById(R.id.settings);
-        if (settingsIcon != null) settingsIcon.setVisibility(View.VISIBLE);
+
+        Fragment currentFragment = requireActivity()
+                .getSupportFragmentManager()
+                .findFragmentById(R.id.frame_layout);
+
+        if (!(currentFragment instanceof SiteRecommendationFragment)) {
+            View bottomNav = requireActivity().findViewById(R.id.bottomNavigationView);
+            if (bottomNav != null) bottomNav.setVisibility(View.VISIBLE);
+
+            View settingsIcon = requireActivity().findViewById(R.id.settings);
+            if (settingsIcon != null) settingsIcon.setVisibility(View.VISIBLE);
+        }
     }
+
 }

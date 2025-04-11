@@ -1,18 +1,22 @@
 package com.example.licenta_v2.ui.myPlants;
 
 import android.os.Bundle;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.GridLayout;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import com.bumptech.glide.Glide;
@@ -88,20 +92,6 @@ public class SiteRecommendationFragment extends Fragment {
         if (settingsIcon != null) settingsIcon.setVisibility(View.GONE);
 
         db = FirebaseFirestore.getInstance();
-
-        View addCustomRoomButton = view.findViewById(R.id.addCustomLocationButton);
-        addCustomRoomButton.setOnClickListener(v -> {
-            SavedPlant savedPlant = new SavedPlant();
-            savedPlant.setPlantData(plant);
-
-            AddCustomSiteFragment fragment = AddCustomSiteFragment.newInstance(savedPlant);
-            requireActivity().getSupportFragmentManager()
-                    .beginTransaction()
-                    .replace(R.id.frame_layout, fragment)
-                    .addToBackStack(null)
-                    .commit();
-        });
-
 
         loadSites();
     }
@@ -200,6 +190,37 @@ public class SiteRecommendationFragment extends Fragment {
             recommendedContainer.addView(siteView);
         }
 
+        View addCustomCard = inflater.inflate(R.layout.item_site, recommendedContainer, false);
+
+        TextView nameView = addCustomCard.findViewById(R.id.siteName);
+        ImageView imageView = addCustomCard.findViewById(R.id.siteImage);
+
+        nameView.setText("Add Your Room");
+        imageView.setImageResource(R.drawable.add);
+
+        RelativeLayout.LayoutParams imageParams = new RelativeLayout.LayoutParams(300, 300);
+        imageParams.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE);
+        imageView.setLayoutParams(imageParams);
+
+        GridLayout.LayoutParams addParams = new GridLayout.LayoutParams();
+        addParams.width = 0;
+        addParams.columnSpec = GridLayout.spec(GridLayout.UNDEFINED, 1f);
+        addCustomCard.setLayoutParams(addParams);
+
+        addCustomCard.setOnClickListener(v -> {
+            SavedPlant sp = new SavedPlant();
+            sp.setPlantData(plant);
+            AddCustomSiteFragment fragment = AddCustomSiteFragment.newInstance(sp);
+
+            requireActivity().getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.frame_layout, fragment)
+                    .addToBackStack(null)
+                    .commit();
+        });
+
+        recommendedContainer.addView(addCustomCard);
+
         for (Site site : notRecommendedSites) {
             View siteView = inflater.inflate(R.layout.item_site, notRecommendedContainer, false);
 
@@ -213,9 +234,11 @@ public class SiteRecommendationFragment extends Fragment {
         }
     }
 
+
     private void bindSiteToView(Site site, View view) {
         TextView nameView = view.findViewById(R.id.siteName);
         ImageView imageView = view.findViewById(R.id.siteImage);
+        RelativeLayout cardContainer = view.findViewById(R.id.siteCardContainer);
 
         nameView.setText(site.getName());
 
@@ -227,14 +250,32 @@ public class SiteRecommendationFragment extends Fragment {
 
             Glide.with(getContext())
                     .load(imageBase64)
-                    .placeholder(R.drawable.ic_launcher_background)
+                    .placeholder(R.drawable.location)
                     .into(imageView);
+
+            cardContainer.setBackground(null);
+
         } else {
-            imageView.setImageResource(R.drawable.ic_launcher_background);
+            imageView.setImageResource(R.drawable.location);
+
+            cardContainer.setBackground(ContextCompat.getDrawable(requireContext(), R.drawable.background_icon_box));
+
+            ViewGroup.LayoutParams layoutParams = imageView.getLayoutParams();
+            layoutParams.width = 300;
+            layoutParams.height = 300;
+            imageView.setLayoutParams(layoutParams);
+
+            if (layoutParams instanceof RelativeLayout.LayoutParams) {
+                ((RelativeLayout.LayoutParams) layoutParams).addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE);
+            } else if (layoutParams instanceof FrameLayout.LayoutParams) {
+                ((FrameLayout.LayoutParams) layoutParams).gravity = Gravity.CENTER;
+            }
         }
 
         view.setOnClickListener(v -> onSiteClicked(site));
     }
+
+
 
     private void onSiteClicked(Site site) {
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();

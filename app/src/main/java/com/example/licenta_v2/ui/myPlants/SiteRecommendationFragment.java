@@ -96,18 +96,6 @@ public class SiteRecommendationFragment extends Fragment {
         loadSites();
     }
 
-
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-
-        View bottomNav = requireActivity().findViewById(R.id.bottomNavigationView);
-        if (bottomNav != null) bottomNav.setVisibility(View.VISIBLE);
-
-        View settingsIcon = requireActivity().findViewById(R.id.settings);
-        if (settingsIcon != null) settingsIcon.setVisibility(View.VISIBLE);
-    }
-
     private void loadSites() {
         loadingSpinner.setVisibility(View.VISIBLE);
         scrollableContent.setVisibility(View.GONE);
@@ -214,10 +202,17 @@ public class SiteRecommendationFragment extends Fragment {
 
             requireActivity().getSupportFragmentManager()
                     .beginTransaction()
+                    .setCustomAnimations(
+                            R.anim.slide_in_right,
+                            R.anim.slide_out_left,
+                            R.anim.slide_in_left,
+                            R.anim.slide_out_right
+                    )
                     .replace(R.id.frame_layout, fragment)
                     .addToBackStack(null)
                     .commit();
         });
+
 
         recommendedContainer.addView(addCustomCard);
 

@@ -6,6 +6,7 @@ public class SavedPlant implements Serializable {
     private PlantDetailsResponse plantData;
     private String addedSite;
     private String addedDate;
+    private boolean exposedToRain;
 
     public SavedPlant() {}
 
@@ -31,5 +32,13 @@ public class SavedPlant implements Serializable {
 
     public void setAddedDate(String addedDate) {
         this.addedDate = addedDate;
+    }
+
+    public boolean isExposedToRain() {
+        return exposedToRain;
+    }
+
+    public void setExposedToRain(boolean exposedToRain) {
+        this.exposedToRain = exposedToRain;
     }
 }

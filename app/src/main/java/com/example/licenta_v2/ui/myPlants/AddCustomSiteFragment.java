@@ -6,6 +6,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.RadioGroup;
 import android.widget.Toast;
 
@@ -26,6 +27,7 @@ public class AddCustomSiteFragment extends Fragment {
 
     private EditText siteNameInput;
     private RadioGroup lightRadioGroup;
+    private RadioGroup rainRadioGroup;
     private SavedPlant savedPlant;
 
     @Nullable
@@ -36,9 +38,13 @@ public class AddCustomSiteFragment extends Fragment {
 
         siteNameInput = view.findViewById(R.id.siteNameInput);
         lightRadioGroup = view.findViewById(R.id.lightRadioGroup);
+        rainRadioGroup = view.findViewById(R.id.rainRadioGroup);
         Button saveButton = view.findViewById(R.id.saveSiteButton);
+        ImageView backButton = view.findViewById(R.id.backButtonAddSite);
 
         saveButton.setOnClickListener(v -> saveCustomSite());
+        backButton.setOnClickListener(v -> requireActivity().getSupportFragmentManager().popBackStack());
+
 
         return view;
     }
@@ -50,6 +56,7 @@ public class AddCustomSiteFragment extends Fragment {
             savedPlant = (SavedPlant) getArguments().getSerializable("savedPlant");
         }
     }
+
     public static AddCustomSiteFragment newInstance(SavedPlant savedPlant) {
         AddCustomSiteFragment fragment = new AddCustomSiteFragment();
         Bundle args = new Bundle();
@@ -76,11 +83,20 @@ public class AddCustomSiteFragment extends Fragment {
             return;
         }
 
+        int rainSelected = rainRadioGroup.getCheckedRadioButtonId();
+        if (rainSelected == -1) {
+            Toast.makeText(getContext(), "Please select whether it's exposed to rain", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        boolean exposedToRain = rainSelected == R.id.rainYesRadio;
+
         Map<String, Object> customSite = new HashMap<>();
         customSite.put("name", name);
         customSite.put("full_sun", fullSun);
         customSite.put("partial_sun", partialSun);
         customSite.put("full_shade", fullShade);
+        customSite.put("exposed_to_rain", exposedToRain);
 
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         if (user == null) return;
@@ -92,12 +108,13 @@ public class AddCustomSiteFragment extends Fragment {
                 .collection("customSites")
                 .add(customSite)
                 .addOnSuccessListener(doc -> {
-                    Toast.makeText(getContext(), "Camera adăugată!", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getContext(), "Room added!", Toast.LENGTH_SHORT).show();
 
                     if (savedPlant != null) {
                         savedPlant.setAddedSite(name);
                         String currentDate = new java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault()).format(new java.util.Date());
                         savedPlant.setAddedDate(currentDate);
+                        savedPlant.setExposedToRain(exposedToRain);
 
                         db.collection("users")
                                 .document(user.getUid())
@@ -105,9 +122,15 @@ public class AddCustomSiteFragment extends Fragment {
                                 .document(savedPlant.getPlantData().getCommonName())
                                 .set(savedPlant)
                                 .addOnSuccessListener(aVoid -> {
-                                    Toast.makeText(getContext(), "Planta salvată!", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(getContext(), "Plant saved!", Toast.LENGTH_SHORT).show();
 
-                                    // ✅ Redirecționează către MyPlants
+                                    View bottomNavView = requireActivity().findViewById(R.id.bottomNavigationView);
+                                    if (bottomNavView instanceof com.google.android.material.bottomnavigation.BottomNavigationView) {
+                                        bottomNavView.setVisibility(View.VISIBLE);
+                                        ((com.google.android.material.bottomnavigation.BottomNavigationView) bottomNavView)
+                                                .setSelectedItemId(R.id.myPlants);
+                                    }
+
                                     requireActivity().getSupportFragmentManager()
                                             .beginTransaction()
                                             .replace(R.id.frame_layout, new MyPlantsFragment())
@@ -115,15 +138,10 @@ public class AddCustomSiteFragment extends Fragment {
                                             .commit();
                                 })
                                 .addOnFailureListener(e ->
-                                        Toast.makeText(getContext(), "Eroare la salvarea plantei: " + e.getMessage(), Toast.LENGTH_SHORT).show()
-                                );
+                                        Toast.makeText(getContext(), "Eroare la salvarea plantei: " + e.getMessage(), Toast.LENGTH_SHORT).show());
                     }
-
                 })
                 .addOnFailureListener(e ->
-                        Toast.makeText(getContext(), "Eroare la salvarea camerei: " + e.getMessage(), Toast.LENGTH_SHORT).show()
-                );
+                        Toast.makeText(getContext(), "Eroare la salvarea camerei: " + e.getMessage(), Toast.LENGTH_SHORT).show());
     }
-
 }
-

@@ -10,11 +10,11 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.licenta_v2.R;
+import com.example.licenta_v2.model.GroupedPlantItem;
 import com.example.licenta_v2.model.SavedPlant;
 import com.example.licenta_v2.ui.findplants.FindPlantsFragment;
 import com.google.firebase.auth.FirebaseAuth;
@@ -23,14 +23,16 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class MyPlantsFragment extends Fragment {
 
     private RecyclerView recyclerView;
-    private MyPlantsAdapter adapter;
+    private GroupedMyPlantsAdapter adapter;
     private ProgressBar loadingBar;
-    private List<SavedPlant> plantList = new ArrayList<>();
+    private View emptyLayout;
 
     @Nullable
     @Override
@@ -40,12 +42,12 @@ public class MyPlantsFragment extends Fragment {
 
         recyclerView = view.findViewById(R.id.myPlantsRecyclerView);
         loadingBar = view.findViewById(R.id.loadingBarMyPlants);
-        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-        adapter = new MyPlantsAdapter(getContext(), plantList);
-        recyclerView.setAdapter(adapter);
-
-        View emptyLayout = view.findViewById(R.id.emptyStateLayout);
+        emptyLayout = view.findViewById(R.id.emptyStateLayout);
         View addButton = view.findViewById(R.id.addFirstPlantButton);
+
+        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        adapter = new GroupedMyPlantsAdapter(getContext());
+        recyclerView.setAdapter(adapter);
 
         addButton.setOnClickListener(v -> {
             requireActivity().getSupportFragmentManager()
@@ -61,17 +63,16 @@ public class MyPlantsFragment extends Fragment {
             }
         });
 
-        loadingBar.setVisibility(View.VISIBLE);
         loadMyPlants();
-
         return view;
     }
 
     private void loadMyPlants() {
+        loadingBar.setVisibility(View.VISIBLE);
+
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
         if (currentUser == null) {
-            Toast.makeText(getContext(), "User not logged in", Toast.LENGTH_SHORT).show();
-            if (loadingBar != null) loadingBar.setVisibility(View.GONE);
+            showError("User not logged in");
             return;
         }
 
@@ -81,29 +82,34 @@ public class MyPlantsFragment extends Fragment {
                 .collection("myPlants")
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
-                    plantList.clear();
+                    Map<String, List<SavedPlant>> grouped = new HashMap<>();
+
                     for (QueryDocumentSnapshot doc : queryDocumentSnapshots) {
-                        SavedPlant savedPlant = doc.toObject(SavedPlant.class);
-                        plantList.add(savedPlant);
-                    }
-
-                    adapter.notifyDataSetChanged();
-
-                    if (loadingBar != null) loadingBar.setVisibility(View.GONE);
-
-                    View view = getView();
-                    if (view != null) {
-                        View emptyLayout = view.findViewById(R.id.emptyStateLayout);
-                        if (emptyLayout != null) {
-                            emptyLayout.setVisibility(plantList.isEmpty() ? View.VISIBLE : View.GONE);
-                            recyclerView.setVisibility(plantList.isEmpty() ? View.GONE : View.VISIBLE);
+                        SavedPlant plant = doc.toObject(SavedPlant.class);
+                        String room = plant.getAddedSite();
+                        if (!grouped.containsKey(room)) {
+                            grouped.put(room, new ArrayList<>());
                         }
+                        grouped.get(room).add(plant);
                     }
+
+                    List<GroupedPlantItem> groupedList = new ArrayList<>();
+                    for (Map.Entry<String, List<SavedPlant>> entry : grouped.entrySet()) {
+                        groupedList.add(new GroupedPlantItem(entry.getKey(), entry.getValue()));
+                    }
+
+                    adapter.setGroupedItems(groupedList);
+
+                    boolean isEmpty = groupedList.isEmpty();
+                    emptyLayout.setVisibility(isEmpty ? View.VISIBLE : View.GONE);
+                    recyclerView.setVisibility(isEmpty ? View.GONE : View.VISIBLE);
+                    loadingBar.setVisibility(View.GONE);
                 })
-                .addOnFailureListener(e -> {
-                    Toast.makeText(getContext(), "Failed to load plants: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                    if (loadingBar != null) loadingBar.setVisibility(View.GONE);
-                });
+                .addOnFailureListener(e -> showError("Error loading plants: " + e.getMessage()));
     }
 
+    private void showError(String message) {
+        Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
+        loadingBar.setVisibility(View.GONE);
+    }
 }

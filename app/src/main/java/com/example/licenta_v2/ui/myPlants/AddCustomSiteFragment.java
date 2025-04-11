@@ -136,12 +136,18 @@ public class AddCustomSiteFragment extends Fragment {
                                             .replace(R.id.frame_layout, new MyPlantsFragment())
                                             .addToBackStack(null)
                                             .commit();
+                                    View bottomNav = requireActivity().findViewById(R.id.bottomNavigationView);
+                                    if (bottomNav != null) bottomNav.setVisibility(View.VISIBLE);
+
+                                    View settingsIcon = requireActivity().findViewById(R.id.settings);
+                                    if (settingsIcon != null) settingsIcon.setVisibility(View.VISIBLE);
+
                                 })
                                 .addOnFailureListener(e ->
-                                        Toast.makeText(getContext(), "Eroare la salvarea plantei: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+                                        Toast.makeText(getContext(), "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show());
                     }
                 })
                 .addOnFailureListener(e ->
-                        Toast.makeText(getContext(), "Eroare la salvarea camerei: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+                        Toast.makeText(getContext(), "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show());
     }
 }

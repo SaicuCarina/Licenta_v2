@@ -163,9 +163,11 @@ public class FindPlantsFragment extends Fragment {
 
         ImageView favoriteIcon = view.findViewById(R.id.favorite);
         favoriteIcon.setOnClickListener(v -> {
+            FavoritesFragment fragment = FavoritesFragment.newInstance("findPlants");
+
             requireActivity().getSupportFragmentManager()
                     .beginTransaction()
-                    .replace(R.id.frame_layout, new FavoritesFragment())
+                    .replace(R.id.frame_layout, fragment)
                     .addToBackStack(null)
                     .commit();
         });

@@ -8,7 +8,17 @@ public class SavedPlant implements Serializable {
     private String addedDate;
     private boolean exposedToRain;
 
+    private String customName;
+
     public SavedPlant() {}
+
+    public String getCustomName() {
+        return customName;
+    }
+
+    public void setCustomName(String customName) {
+        this.customName = customName;
+    }
 
     public PlantDetailsResponse getPlantData() {
         return plantData;

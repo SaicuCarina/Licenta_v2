@@ -33,6 +33,16 @@ public class FavoritesFragment extends Fragment {
     private FavoritePlantAdapter adapter;
     private List<PlantDetailsResponse> favoritePlants = new ArrayList<>();
     private ProgressBar loadingBar;
+    public static final String ARG_PREVIOUS_FRAGMENT = "previous_fragment";
+
+    public static FavoritesFragment newInstance(String from) {
+        FavoritesFragment fragment = new FavoritesFragment();
+        Bundle args = new Bundle();
+        args.putString(ARG_PREVIOUS_FRAGMENT, from);
+        fragment.setArguments(args);
+        return fragment;
+    }
+
 
 
     @Nullable
@@ -55,12 +65,22 @@ public class FavoritesFragment extends Fragment {
 
         ImageView backButton = view.findViewById(R.id.back_favorite);
         backButton.setOnClickListener(v -> {
+            String previous = getArguments() != null ? getArguments().getString(ARG_PREVIOUS_FRAGMENT) : null;
+            Fragment destinationFragment;
+
+            if ("myPlants".equals(previous)) {
+                destinationFragment = new com.example.licenta_v2.ui.myPlants.MyPlantsFragment();
+            } else {
+                destinationFragment = new com.example.licenta_v2.ui.findplants.FindPlantsFragment();
+            }
+
             requireActivity().getSupportFragmentManager()
                     .beginTransaction()
-                    .replace(R.id.frame_layout, new com.example.licenta_v2.ui.findplants.FindPlantsFragment())
+                    .replace(R.id.frame_layout, destinationFragment)
                     .addToBackStack(null)
                     .commit();
         });
+
 
         loadFavoritesFromFirestore();
 

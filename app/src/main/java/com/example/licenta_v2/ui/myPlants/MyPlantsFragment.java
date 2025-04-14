@@ -16,6 +16,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.licenta_v2.R;
 import com.example.licenta_v2.model.GroupedPlantItem;
 import com.example.licenta_v2.model.SavedPlant;
+import com.example.licenta_v2.ui.details.PlantDetailsFragment;
+import com.example.licenta_v2.ui.favorites.FavoritesFragment;
 import com.example.licenta_v2.ui.findplants.FindPlantsFragment;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -45,8 +47,32 @@ public class MyPlantsFragment extends Fragment {
         emptyLayout = view.findViewById(R.id.emptyStateLayout);
         View addButton = view.findViewById(R.id.addFirstPlantButton);
 
+        View favoriteButton = view.findViewById(R.id.favorite);
+        favoriteButton.setOnClickListener(v -> {
+            FavoritesFragment fragment = FavoritesFragment.newInstance("myPlants");
+
+            requireActivity().getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.frame_layout, fragment)
+                    .addToBackStack(null)
+                    .commit();
+
+        });
+
+
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-        adapter = new GroupedMyPlantsAdapter(getContext());
+        adapter = new GroupedMyPlantsAdapter(
+                getContext(),
+                plant -> {
+                    requireActivity().getSupportFragmentManager()
+                            .beginTransaction()
+                            .replace(R.id.frame_layout, PlantDetailsFragment.newInstance(plant.getPlantData()))
+                            .addToBackStack(null)
+                            .commit();
+                },
+                this::loadMyPlants
+        );
+
         recyclerView.setAdapter(adapter);
 
         addButton.setOnClickListener(v -> {
@@ -112,4 +138,15 @@ public class MyPlantsFragment extends Fragment {
         Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
         loadingBar.setVisibility(View.GONE);
     }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        View bottomNavView = requireActivity().findViewById(R.id.bottomNavigationView);
+        if (bottomNavView != null) {
+            bottomNavView.setVisibility(View.VISIBLE);
+        }
+    }
+
 }

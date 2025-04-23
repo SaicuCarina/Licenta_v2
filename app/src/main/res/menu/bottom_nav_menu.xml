@@ -7,6 +7,9 @@
     <item android:title="Find Plants"
         android:icon="@drawable/search"
         android:id="@+id/findPlants"/>
+    <item android:title="Notifications"
+        android:icon="@drawable/notifications_menu"
+        android:id="@+id/notifications"/>
     <item android:title="Profile"
         android:icon="@drawable/person"
         android:id="@+id/profile"/>

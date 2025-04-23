@@ -18,6 +18,7 @@ import com.example.licenta_v2.R;
 import com.example.licenta_v2.databinding.ActivityHomeBinding;
 import com.example.licenta_v2.ui.myPlants.MyPlantsFragment;
 import com.example.licenta_v2.ui.findplants.FindPlantsFragment;
+import com.example.licenta_v2.ui.notifications.NotificationsFragment;
 import com.example.licenta_v2.ui.profile.ProfileFragment;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
@@ -62,6 +63,8 @@ public class HomeActivity extends AppCompatActivity {
                 replaceFragment(new FindPlantsFragment());
             } else if (itemId == R.id.profile) {
                 replaceFragment(new ProfileFragment());
+            } else if(itemId == R.id.notifications){
+                replaceFragment(new NotificationsFragment());
             }
 
             return true;

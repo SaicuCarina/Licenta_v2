@@ -59,6 +59,11 @@ public class MyPlantsFragment extends Fragment {
 
         });
 
+        View settingsIcon = requireActivity().findViewById(R.id.settings);
+        if (settingsIcon != null) {
+            settingsIcon.setVisibility(View.VISIBLE);
+        }
+
 
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         adapter = new GroupedMyPlantsAdapter(

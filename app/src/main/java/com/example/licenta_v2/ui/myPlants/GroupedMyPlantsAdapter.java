@@ -140,7 +140,7 @@ public class GroupedMyPlantsAdapter extends RecyclerView.Adapter<RecyclerView.Vi
                 db.collection("users")
                         .document(FirebaseAuth.getInstance().getCurrentUser().getUid())
                         .collection("myPlants")
-                        .document(plant.getCommonName())
+                        .document(savedPlant.getId())
                         .delete()
                         .addOnSuccessListener(aVoid -> {
                             Toast.makeText(context, "Plant removed", Toast.LENGTH_SHORT).show();
@@ -175,7 +175,7 @@ public class GroupedMyPlantsAdapter extends RecyclerView.Adapter<RecyclerView.Vi
                         .collection("users")
                         .document(FirebaseAuth.getInstance().getCurrentUser().getUid())
                         .collection("myPlants")
-                        .document(plant.getCommonName())
+                        .document(savedPlant.getId())
                         .set(savedPlant)
                         .addOnSuccessListener(aVoid -> {
                             Toast.makeText(context, "Updated!", Toast.LENGTH_SHORT).show();

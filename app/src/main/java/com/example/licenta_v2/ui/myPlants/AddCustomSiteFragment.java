@@ -113,15 +113,18 @@ public class AddCustomSiteFragment extends Fragment {
                     if (savedPlant != null) {
                         savedPlant.setAddedSite(name);
                         String currentDate = new java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault()).format(new java.util.Date());
+                        savedPlant.setLastWateredDate(currentDate);
                         savedPlant.setAddedDate(currentDate);
                         savedPlant.setExposedToRain(exposedToRain);
 
                         db.collection("users")
                                 .document(user.getUid())
                                 .collection("myPlants")
-                                .document(savedPlant.getPlantData().getCommonName())
-                                .set(savedPlant)
-                                .addOnSuccessListener(aVoid -> {
+                                .add(savedPlant) // folosește .add() în loc de .document(id).set(...)
+                                .addOnSuccessListener(docRef -> {
+                                    savedPlant.setId(docRef.getId()); // setează ID-ul după ce e generat
+                                    docRef.set(savedPlant); // salvează din nou cu ID-ul setat
+
                                     Toast.makeText(getContext(), "Plant saved!", Toast.LENGTH_SHORT).show();
 
                                     View bottomNavView = requireActivity().findViewById(R.id.bottomNavigationView);
@@ -136,15 +139,16 @@ public class AddCustomSiteFragment extends Fragment {
                                             .replace(R.id.frame_layout, new MyPlantsFragment())
                                             .addToBackStack(null)
                                             .commit();
+
                                     View bottomNav = requireActivity().findViewById(R.id.bottomNavigationView);
                                     if (bottomNav != null) bottomNav.setVisibility(View.VISIBLE);
 
                                     View settingsIcon = requireActivity().findViewById(R.id.settings);
                                     if (settingsIcon != null) settingsIcon.setVisibility(View.VISIBLE);
-
                                 })
                                 .addOnFailureListener(e ->
                                         Toast.makeText(getContext(), "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+
                     }
                 })
                 .addOnFailureListener(e ->

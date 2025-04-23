@@ -48,7 +48,8 @@ public class SiteRecommendationFragment extends Fragment {
     private ScrollView scrollableContent;
     private PlantDetailsResponse plant;
     private SavedPlant savedPlant;
-
+    private ProgressBar addPlantProgressBar;
+    private FrameLayout addPlantOverlay;
 
     public SiteRecommendationFragment() {}
 
@@ -72,6 +73,8 @@ public class SiteRecommendationFragment extends Fragment {
         notRecommendedContainer = view.findViewById(R.id.notRecommendedContainer);
         loadingSpinner = view.findViewById(R.id.loadingSpinner);
         scrollableContent = view.findViewById(R.id.scrollableContent);
+        addPlantOverlay = view.findViewById(R.id.addPlantOverlay);
+        addPlantProgressBar = view.findViewById(R.id.addPlantProgressBar);
 
         if (getArguments() != null) {
             plant = (PlantDetailsResponse) getArguments().getSerializable("plant");
@@ -269,9 +272,6 @@ public class SiteRecommendationFragment extends Fragment {
 
         view.setOnClickListener(v -> onSiteClicked(site));
     }
-
-
-
     private void onSiteClicked(Site site) {
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
         if (currentUser == null || plant == null) {
@@ -279,44 +279,74 @@ public class SiteRecommendationFragment extends Fragment {
             return;
         }
 
+        if (addPlantOverlay != null) {
+            addPlantOverlay.setAlpha(0f);
+            addPlantOverlay.setVisibility(View.VISIBLE);
+            addPlantOverlay.animate().alpha(1f).setDuration(200).start();
+        }
+
         FirebaseFirestore db = FirebaseFirestore.getInstance();
-        DocumentReference plantRef = db.collection("users")
+        String generatedId = db.collection("users")
                 .document(currentUser.getUid())
                 .collection("myPlants")
-                .document(plant.getCommonName());
+                .document()
+                .getId();
 
         SavedPlant savedPlant = new SavedPlant();
+        savedPlant.setId(generatedId);
         savedPlant.setPlantData(plant);
         savedPlant.setAddedSite(site.getName());
 
         String currentDate = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
         savedPlant.setAddedDate(currentDate);
+        savedPlant.setLastWateredDate(currentDate);
 
-        plantRef.set(savedPlant)
+        db.collection("users")
+                .document(currentUser.getUid())
+                .collection("myPlants")
+                .document(generatedId)
+                .set(savedPlant)
                 .addOnSuccessListener(aVoid -> {
+                    if (addPlantOverlay != null) {
+                        addPlantOverlay.animate()
+                                .alpha(0f)
+                                .setDuration(200)
+                                .withEndAction(() -> addPlantOverlay.setVisibility(View.GONE))
+                                .start();
+                    }
+
                     Toast.makeText(getContext(), "Plant added to My Plants!", Toast.LENGTH_SHORT).show();
 
                     View bottomNavView = requireActivity().findViewById(R.id.bottomNavigationView);
                     if (bottomNavView instanceof com.google.android.material.bottomnavigation.BottomNavigationView) {
+                        bottomNavView.setVisibility(View.VISIBLE);
                         ((com.google.android.material.bottomnavigation.BottomNavigationView) bottomNavView)
                                 .setSelectedItemId(R.id.myPlants);
                     }
+
+                    View settingsIcon = requireActivity().findViewById(R.id.settings);
+                    if (settingsIcon != null) settingsIcon.setVisibility(View.VISIBLE);
 
                     requireActivity().getSupportFragmentManager()
                             .beginTransaction()
                             .replace(R.id.frame_layout, new MyPlantsFragment())
                             .addToBackStack(null)
                             .commit();
-                    View bottomNav = requireActivity().findViewById(R.id.bottomNavigationView);
-                    if (bottomNav != null) bottomNav.setVisibility(View.VISIBLE);
-
-                    View settingsIcon = requireActivity().findViewById(R.id.settings);
-                    if (settingsIcon != null) settingsIcon.setVisibility(View.VISIBLE);
-
                 })
-                .addOnFailureListener(e ->
-                        Toast.makeText(getContext(), "Failed to add plant: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+                .addOnFailureListener(e -> {
+                    if (addPlantOverlay != null) {
+                        addPlantOverlay.animate()
+                                .alpha(0f)
+                                .setDuration(200)
+                                .withEndAction(() -> addPlantOverlay.setVisibility(View.GONE))
+                                .start();
+                    }
+
+                    Toast.makeText(getContext(), "Failed to add plant: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                });
     }
+
+
 
 
 

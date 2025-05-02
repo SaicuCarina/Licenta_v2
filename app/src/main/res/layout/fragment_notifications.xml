@@ -10,21 +10,42 @@
         android:id="@+id/notificationsTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Watering"
+        android:text="Notifications"
         android:textSize="30sp"
-        android:textStyle="bold"
         android:textColor="@color/black"
         android:layout_marginLeft="35px"
         android:layout_marginTop="35px"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <ImageButton
+        android:id="@+id/toggleCalendarButton"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_marginTop="35px"
+        android:layout_marginRight="165px"
+        android:background="@android:color/transparent"
+        android:src="@drawable/calendar"
+        android:contentDescription="Toggle calendar"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+
+    <com.prolificinteractive.materialcalendarview.MaterialCalendarView
+        android:id="@+id/calendarView"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        app:layout_constraintTop_toBottomOf="@id/notificationsTitle"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/notificationsRecyclerView"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_marginTop="16dp"
-        app:layout_constraintTop_toBottomOf="@id/notificationsTitle"
+        app:layout_constraintTop_toBottomOf="@id/calendarView"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
@@ -37,7 +58,7 @@
         android:textSize="18sp"
         android:textStyle="bold"
         android:visibility="gone"
-        app:layout_constraintTop_toBottomOf="@id/notificationsTitle"
+        app:layout_constraintTop_toBottomOf="@id/calendarView"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

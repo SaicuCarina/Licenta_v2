@@ -6,6 +6,7 @@ public class User {
     private String uid;
     private String email;
     private String name;
+    private String location;
 
     public User() {
         // Constructor gol necesar pentru Firebase
@@ -40,5 +41,13 @@ public class User {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getLocation() {
+        return location;
+    }
+
+    public void setLocation(String location) {
+        this.location = location;
     }
 }

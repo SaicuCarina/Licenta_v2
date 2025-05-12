@@ -23,7 +23,9 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.licenta_v2.R;
 import com.example.licenta_v2.model.SavedPlant;
+import com.example.licenta_v2.ui.weatherAPI.WeatherApiClient;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
+import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -116,6 +118,27 @@ public class NotificationsFragment extends Fragment {
         return view;
     }
 
+    private void runIfFragmentAlive(Runnable action) {
+        if (isAdded() && getActivity() != null) {
+            getActivity().runOnUiThread(action);
+        }
+    }
+
+    private boolean isExposedToRain(SavedPlant plant) {
+        String siteName = plant.getAddedSite();
+        boolean exposed = plant.isExposedToRain();
+        Log.d("RainCheck", "Site: " + siteName + " | exposedToRain flag: " + exposed);
+
+        if (siteName == null) return exposed;
+        if (siteName.equalsIgnoreCase("Front yard") || siteName.equalsIgnoreCase("Backyard")) {
+            Log.d("RainCheck", "Marked as exposed because it's Front/Back yard");
+            return true;
+        }
+
+        return exposed;
+    }
+
+
     static class Triplet<A, B, C> {
         public final A first;
         public final B second;
@@ -129,10 +152,12 @@ public class NotificationsFragment extends Fragment {
     }
 
     private void loadPlantsToWater() {
+        WeatherApiClient weatherApiClient = new WeatherApiClient();
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         if (user == null) return;
 
         loadingBar.setVisibility(View.VISIBLE);
+
         FirebaseFirestore.getInstance()
                 .collection("users")
                 .document(user.getUid())
@@ -143,13 +168,123 @@ public class NotificationsFragment extends Fragment {
                     plantsByDay.clear();
 
                     List<SavedPlant> allPlants = new ArrayList<>();
-                    List<Triplet<SavedPlant, Integer, Integer>> plantIntervals = new ArrayList<>();
-                    List<CalendarDay> markedDays = new ArrayList<>();
-                    List<CalendarDay> allFutureWateringDates = new ArrayList<>();
-
-                    Calendar today = Calendar.getInstance();
                     Date now = new Date();
                     SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+
+                    for (QueryDocumentSnapshot doc : snapshot) {
+                        SavedPlant plant = doc.toObject(SavedPlant.class);
+                        plant.setId(doc.getId());
+                        allPlants.add(plant);
+                    }
+
+                    FirebaseFirestore.getInstance()
+                            .collection("users")
+                            .document(user.getUid())
+                            .get()
+                            .addOnSuccessListener(userDoc -> {
+                                String userLocation = userDoc.getString("location");
+                                if (userLocation == null || userLocation.trim().isEmpty()) {
+                                    userLocation = "Bucharest"; // fallback
+                                }
+
+                                String finalUserLocation = userLocation;
+                                new Thread(() -> {
+                                    boolean updateNeeded = false;
+
+                                    for (SavedPlant plant : allPlants) {
+                                        try {
+                                            if (plant.getPlantData() == null || plant.getPlantData().getWateringInterval() == null)
+                                                continue;
+
+                                            String intervalStr = plant.getPlantData().getWateringInterval().replaceAll("[^0-9\\-]", "-");
+                                            String[] parts = intervalStr.split("-");
+                                            int minDays = Integer.parseInt(parts[0].trim());
+                                            int maxDays = parts.length > 1 ? Integer.parseInt(parts[1].trim()) : minDays;
+
+                                            Date lastWateredDate = format.parse(plant.getLastWateredDate());
+                                            long daysSince = TimeUnit.DAYS.convert(now.getTime() - lastWateredDate.getTime(), TimeUnit.MILLISECONDS);
+
+                                            int start = (int) (minDays - daysSince);
+                                            int end = (int) (maxDays - daysSince);
+
+                                            if (start > 30) continue;
+                                            if (end < 0) {
+                                                start = 0;
+                                                end = 0;
+                                            }
+
+                                            int chosenDay = (start + end) / 2;
+
+                                            Log.d("WateringCheck", "Checking plant: " + plant.getCustomName());
+                                            Log.d("WateringCheck", "chosenDay = " + chosenDay);
+                                            Log.d("WateringCheck", "addedSite = " + plant.getAddedSite() + ", exposedToRain = " + plant.isExposedToRain());
+                                            Log.d("WateringCheck", "isExposedToRain(): " + isExposedToRain(plant));
+
+                                            if (chosenDay == 0 && isExposedToRain(plant)) {
+                                                Map<String, Double> rainMap = weatherApiClient.getHistoricalRainfall(finalUserLocation, 7);
+                                                String rainDate = weatherApiClient.getEffectiveRainDate(rainMap);
+                                                if (rainDate != null) {
+                                                    plant.setLastWateredDate(rainDate);
+                                                    FirebaseFirestore.getInstance()
+                                                            .collection("users")
+                                                            .document(user.getUid())
+                                                            .collection("myPlants")
+                                                            .document(plant.getId())
+                                                            .update("lastWateredDate", rainDate);
+
+                                                    updateNeeded = true;
+
+                                                    String displayName = (plant.getCustomName() != null && !plant.getCustomName().isEmpty())
+                                                            ? plant.getCustomName()
+                                                            : plant.getPlantData().getCommonName();
+
+                                                    String message = "🌧️ The plant \"" + displayName + "\" was exposed to rain.\n\n" +
+                                                            "Watering has been postponed.";
+
+                                                    runIfFragmentAlive(() -> {
+                                                        View rootView = requireActivity().findViewById(android.R.id.content);
+                                                        Snackbar.make(rootView, message, 5000).show();
+                                                    });
+
+
+                                                }
+                                            }
+
+                                        } catch (Exception e) {
+                                            Log.e("loadPlantsToWater", "Eroare evaluare plantă: " + e.getMessage());
+                                        }
+                                    }
+
+                                    if (updateNeeded) {
+                                        runIfFragmentAlive(this::loadPlantsToWater);
+                                    } else {
+                                        runIfFragmentAlive(this::calculateOptimalWatering);
+                                    }
+
+                                }).start();
+                            });
+
+                })
+                .addOnFailureListener(e -> Toast.makeText(getContext(), "Failed to load plants", Toast.LENGTH_SHORT).show());
+    }
+
+    private void calculateOptimalWatering() {
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user == null) return;
+
+        FirebaseFirestore.getInstance()
+                .collection("users")
+                .document(user.getUid())
+                .collection("myPlants")
+                .get()
+                .addOnSuccessListener(snapshot -> {
+                    plantsToWater.clear();
+                    plantsByDay.clear();
+                    List<CalendarDay> markedDays = new ArrayList<>();
+                    Date now = new Date();
+                    SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+
+                    List<Triplet<SavedPlant, Integer, Integer>> plantIntervals = new ArrayList<>();
 
                     for (QueryDocumentSnapshot doc : snapshot) {
                         SavedPlant plant = doc.toObject(SavedPlant.class);
@@ -167,60 +302,46 @@ public class NotificationsFragment extends Fragment {
                             Date lastWateredDate = format.parse(plant.getLastWateredDate());
                             long daysSince = TimeUnit.DAYS.convert(now.getTime() - lastWateredDate.getTime(), TimeUnit.MILLISECONDS);
 
-                            // Calculează corect intervalul față de azi
                             int start = (int) (minDays - daysSince);
                             int end = (int) (maxDays - daysSince);
 
-                            if (end < 0 || start > 30) continue;
+                            if (start > 30) continue;
+                            if (end < 0) {
+                                start = 0;
+                                end = 0;
+                            }
 
                             start = Math.max(0, start);
                             end = Math.min(30, end);
 
                             plantIntervals.add(new Triplet<>(plant, start, end));
-
-                            // doar pentru marcarea estimativă (nu afectează optimizarea)
-                            Calendar future = Calendar.getInstance();
-                            future.setTime(lastWateredDate);
-                            future.add(Calendar.DATE, minDays);
-                            allFutureWateringDates.add(CalendarDay.from(future));
-
                         } catch (Exception e) {
-                            Log.e("OptimizareDebug", "Eroare parsare interval: " + e.getMessage());
+                            Log.e("calculateOptimalWatering", "Eroare parsare interval: " + e.getMessage());
                         }
                     }
 
-                    // Sortează după capătul din dreapta (end)
                     plantIntervals.sort(Comparator.comparingInt(p -> p.third));
 
                     int i = 0;
                     while (i < plantIntervals.size()) {
                         Triplet<SavedPlant, Integer, Integer> current = plantIntervals.get(i);
-                        int groupStart = current.second;
                         int groupEnd = current.third;
-
                         List<Triplet<SavedPlant, Integer, Integer>> cluster = new ArrayList<>();
                         cluster.add(current);
                         i++;
 
-                        // Caută alte intervale care se intersectează
                         while (i < plantIntervals.size()) {
                             Triplet<SavedPlant, Integer, Integer> next = plantIntervals.get(i);
                             if (next.second <= groupEnd) {
                                 cluster.add(next);
-                                groupEnd = Math.min(groupEnd, next.third); // opțional
+                                groupEnd = Math.min(groupEnd, next.third);
                                 i++;
                             } else {
                                 break;
                             }
                         }
 
-                        int chosenDay;
-                        if (cluster.size() == 1) {
-                            Triplet<SavedPlant, Integer, Integer> only = cluster.get(0);
-                            chosenDay = (only.second + only.third) / 2;
-                        } else {
-                            chosenDay = current.third;
-                        }
+                        int chosenDay = Math.max(0, cluster.size() == 1 ? (cluster.get(0).second + cluster.get(0).third) / 2 : groupEnd);
 
                         Calendar cal = Calendar.getInstance();
                         cal.add(Calendar.DATE, chosenDay);
@@ -228,8 +349,10 @@ public class NotificationsFragment extends Fragment {
 
                         List<SavedPlant> validPlants = new ArrayList<>();
                         for (Triplet<SavedPlant, Integer, Integer> t : cluster) {
-                            if (t.first != null && t.first.getPlantData() != null) {
-                                validPlants.add(t.first);
+                            SavedPlant plant = t.first;
+                            validPlants.add(plant);
+                            if (chosenDay == 0) {
+                                plantsToWater.add(plant);
                             }
                         }
 
@@ -239,27 +362,21 @@ public class NotificationsFragment extends Fragment {
                         }
                     }
 
-                    // doar plantele pentru azi, în pagina principală
-                    CalendarDay todayDay = CalendarDay.from(Calendar.getInstance());
-                    if (plantsByDay.containsKey(todayDay)) {
-                        plantsToWater.addAll(plantsByDay.get(todayDay));
-                    }
-
                     if (getView() != null) {
                         MaterialCalendarView calendarView = getView().findViewById(R.id.calendarView);
                         if (calendarView != null) {
                             calendarView.removeDecorators();
                             calendarView.addDecorator(new DotDecorator(markedDays, Color.parseColor("#4CAF50")));
-//                            calendarView.addDecorator(new DotDecorator(allFutureWateringDates, Color.parseColor("#A5D6A7")));
                         }
                     }
 
                     adapter.notifyDataSetChanged();
                     updateEmptyState();
-                })
-                .addOnFailureListener(e -> Toast.makeText(getContext(), "Failed to load plants", Toast.LENGTH_SHORT).show())
-                .addOnCompleteListener(task -> loadingBar.setVisibility(View.GONE));
+                    loadingBar.setVisibility(View.GONE);
+                });
     }
+
+
 
 
 
@@ -281,9 +398,7 @@ public class NotificationsFragment extends Fragment {
                     .document(plant.getId())
                     .update("lastWateredDate", today)
                     .addOnSuccessListener(aVoid -> {
-                        plantsToWater.remove(plant);
-                        adapter.notifyDataSetChanged();
-                        updateEmptyState();
+                        loadPlantsToWater();
                     });
         }
     }

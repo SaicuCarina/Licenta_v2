@@ -1,5 +1,6 @@
 package com.example.licenta_v2.ui.myPlants;
 
+import android.app.AlertDialog;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -37,6 +38,16 @@ public class AddCustomSiteFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_add_custom_site, container, false);
 
         siteNameInput = view.findViewById(R.id.siteNameInput);
+
+        siteNameInput.setOnEditorActionListener((v, actionId, event) -> {
+            siteNameInput.clearFocus();
+            android.view.inputmethod.InputMethodManager imm = (android.view.inputmethod.InputMethodManager) requireContext().getSystemService(android.content.Context.INPUT_METHOD_SERVICE);
+            if (imm != null) {
+                imm.hideSoftInputFromWindow(siteNameInput.getWindowToken(), 0);
+            }
+            return true;
+        });
+
         lightRadioGroup = view.findViewById(R.id.lightRadioGroup);
         rainRadioGroup = view.findViewById(R.id.rainRadioGroup);
         Button saveButton = view.findViewById(R.id.saveSiteButton);
@@ -65,43 +76,13 @@ public class AddCustomSiteFragment extends Fragment {
         return fragment;
     }
 
-    private void saveCustomSite() {
-        String name = siteNameInput.getText().toString().trim();
-        if (name.isEmpty()) {
-            Toast.makeText(getContext(), "Please enter a name", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        boolean fullSun = false, partialSun = false, fullShade = false;
-
-        int selected = lightRadioGroup.getCheckedRadioButtonId();
-        if (selected == R.id.fullSunRadio) fullSun = true;
-        else if (selected == R.id.partialSunRadio) partialSun = true;
-        else if (selected == R.id.fullShadeRadio) fullShade = true;
-        else {
-            Toast.makeText(getContext(), "Please select a light level", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        int rainSelected = rainRadioGroup.getCheckedRadioButtonId();
-        if (rainSelected == -1) {
-            Toast.makeText(getContext(), "Please select whether it's exposed to rain", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        boolean exposedToRain = rainSelected == R.id.rainYesRadio;
-
+    private void saveSiteAndPlant(String name, boolean fullSun, boolean partialSun, boolean fullShade, boolean exposedToRain, FirebaseFirestore db, FirebaseUser user) {
         Map<String, Object> customSite = new HashMap<>();
         customSite.put("name", name);
         customSite.put("full_sun", fullSun);
         customSite.put("partial_sun", partialSun);
         customSite.put("full_shade", fullShade);
         customSite.put("exposed_to_rain", exposedToRain);
-
-        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-        if (user == null) return;
-
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
 
         db.collection("users")
                 .document(user.getUid())
@@ -120,10 +101,10 @@ public class AddCustomSiteFragment extends Fragment {
                         db.collection("users")
                                 .document(user.getUid())
                                 .collection("myPlants")
-                                .add(savedPlant) // folosește .add() în loc de .document(id).set(...)
+                                .add(savedPlant)
                                 .addOnSuccessListener(docRef -> {
-                                    savedPlant.setId(docRef.getId()); // setează ID-ul după ce e generat
-                                    docRef.set(savedPlant); // salvează din nou cu ID-ul setat
+                                    savedPlant.setId(docRef.getId());
+                                    docRef.set(savedPlant);
 
                                     Toast.makeText(getContext(), "Plant saved!", Toast.LENGTH_SHORT).show();
 
@@ -148,10 +129,71 @@ public class AddCustomSiteFragment extends Fragment {
                                 })
                                 .addOnFailureListener(e ->
                                         Toast.makeText(getContext(), "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show());
-
                     }
                 })
                 .addOnFailureListener(e ->
                         Toast.makeText(getContext(), "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+    }
+
+
+    private void saveCustomSite() {
+        String name = siteNameInput.getText().toString().trim();
+        if (name.isEmpty()) {
+            Toast.makeText(getContext(), "Please enter a name", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        final boolean fullSun, partialSun, fullShade;
+
+        int selected = lightRadioGroup.getCheckedRadioButtonId();
+        if (selected == R.id.fullSunRadio) {
+            fullSun = true;
+            partialSun = false;
+            fullShade = false;
+        } else if (selected == R.id.partialSunRadio) {
+            fullSun = false;
+            partialSun = true;
+            fullShade = false;
+        } else if (selected == R.id.fullShadeRadio) {
+            fullSun = false;
+            partialSun = false;
+            fullShade = true;
+        } else {
+            Toast.makeText(getContext(), "Please select a light level", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        final boolean exposedToRain = rainRadioGroup.getCheckedRadioButtonId() == R.id.rainYesRadio;
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        if (user == null) return;
+
+        db.collection("users").document(user.getUid()).get().addOnSuccessListener(snapshot -> {
+            if (exposedToRain && !snapshot.contains("location")) {
+                View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_enter_location, null);
+                EditText input = dialogView.findViewById(R.id.locationInput); // asigură-te că id-ul este corect
+
+                new AlertDialog.Builder(requireContext())
+                        .setTitle("Set location")
+                        .setMessage("You marked this site as exposed to rain.\nPlease enter your city to track rainfall.")
+                        .setView(dialogView)
+                        .setPositiveButton("Save", (dialog, which) -> {
+                            String city = input.getText().toString().trim();
+                            if (!city.isEmpty()) {
+                                db.collection("users").document(user.getUid())
+                                        .update("location", city)
+                                        .addOnSuccessListener(aVoid ->
+                                                saveSiteAndPlant(name, fullSun, partialSun, fullShade, exposedToRain, db, user));
+                            } else {
+                                Toast.makeText(getContext(), "City cannot be empty", Toast.LENGTH_SHORT).show();
+                            }
+                        })
+                        .setNegativeButton("Cancel", null)
+                        .show();
+
+            } else {
+                saveSiteAndPlant(name, fullSun, partialSun, fullShade, exposedToRain, db, user);
+            }
+        });
     }
 }

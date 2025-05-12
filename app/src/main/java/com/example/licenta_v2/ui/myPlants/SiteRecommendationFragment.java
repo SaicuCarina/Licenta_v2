@@ -1,5 +1,6 @@
 package com.example.licenta_v2.ui.myPlants;
 
+import android.app.AlertDialog;
 import android.os.Bundle;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -279,6 +280,53 @@ public class SiteRecommendationFragment extends Fragment {
             return;
         }
 
+        boolean exposedToRain = site.getName().equalsIgnoreCase("Front yard") || site.getName().equalsIgnoreCase("Backyard");
+
+        if (exposedToRain) {
+            FirebaseFirestore.getInstance()
+                    .collection("users")
+                    .document(currentUser.getUid())
+                    .get()
+                    .addOnSuccessListener(documentSnapshot -> {
+                        String userLocation = documentSnapshot.getString("location");
+
+                        if (userLocation == null || userLocation.trim().isEmpty()) {
+                            View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_enter_location, null);
+                            TextView inputField = dialogView.findViewById(R.id.locationInput);
+
+                            new AlertDialog.Builder(requireContext())
+                                    .setTitle("Set your location")
+                                    .setMessage("Please enter your city. This will be used to check local rainfall.")
+                                    .setView(dialogView)
+                                    .setPositiveButton("Save", (dialog, which) -> {
+                                        String location = inputField.getText().toString().trim();
+
+                                        if (location.isEmpty()) {
+                                            Toast.makeText(getContext(), "Location cannot be empty", Toast.LENGTH_SHORT).show();
+                                            return;
+                                        }
+
+                                        FirebaseFirestore.getInstance()
+                                                .collection("users")
+                                                .document(currentUser.getUid())
+                                                .update("location", location)
+                                                .addOnSuccessListener(aVoid -> {
+                                                    proceedWithSavingPlant(site);
+                                                });
+                                    })
+                                    .setNegativeButton("Cancel", null)
+                                    .show();
+                        } else {
+                            proceedWithSavingPlant(site);
+                        }
+                    });
+        } else {
+            proceedWithSavingPlant(site);
+        }
+    }
+
+    private void proceedWithSavingPlant(Site site) {
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
         if (addPlantOverlay != null) {
             addPlantOverlay.setAlpha(0f);
             addPlantOverlay.setVisibility(View.VISIBLE);
@@ -300,6 +348,9 @@ public class SiteRecommendationFragment extends Fragment {
         String currentDate = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
         savedPlant.setAddedDate(currentDate);
         savedPlant.setLastWateredDate(currentDate);
+
+        boolean exposedToRain = site.getName().equalsIgnoreCase("Front yard") || site.getName().equalsIgnoreCase("Backyard");
+        savedPlant.setExposedToRain(exposedToRain);
 
         db.collection("users")
                 .document(currentUser.getUid())
@@ -345,6 +396,7 @@ public class SiteRecommendationFragment extends Fragment {
                     Toast.makeText(getContext(), "Failed to add plant: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 });
     }
+
 
 
 

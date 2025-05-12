@@ -68,8 +68,6 @@ public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdap
         holder.checkBox.setOnCheckedChangeListener((buttonView, isChecked) -> {
             if (isChecked) {
                 listener.onPlantWatered(plant);
-                plants.remove(position);
-                notifyItemRemoved(position);
             }
         });
     }

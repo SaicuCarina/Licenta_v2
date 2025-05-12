@@ -29,18 +29,20 @@
         android:contentDescription="Iconiță favorite"
         android:src="@drawable/favorite" />
 
-    <Button
+    <EditText
         android:id="@+id/search"
         android:layout_width="150dp"
         android:layout_height="50dp"
         android:layout_marginLeft="35px"
         android:layout_marginTop="170px"
         android:background="@drawable/rounded_corners_black"
-        android:text=" Search"
+        android:hint=" Search"
+        android:textColorHint="#686868"
         android:textAlignment="textStart"
         android:paddingLeft="16dp"
         android:drawableStart="@drawable/search"
         android:textAllCaps="false"
+        android:textSize="15dp"
         android:textColor="#686868" />
     <Button
         android:id="@+id/identify"

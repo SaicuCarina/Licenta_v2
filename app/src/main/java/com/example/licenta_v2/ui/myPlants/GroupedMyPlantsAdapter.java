@@ -136,26 +136,35 @@ public class GroupedMyPlantsAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 
             // Delete
             vh.deleteButton.setOnClickListener(v -> {
-                FirebaseFirestore db = FirebaseFirestore.getInstance();
-                db.collection("users")
-                        .document(FirebaseAuth.getInstance().getCurrentUser().getUid())
-                        .collection("myPlants")
-                        .document(savedPlant.getId())
-                        .delete()
-                        .addOnSuccessListener(aVoid -> {
-                            Toast.makeText(context, "Plant removed", Toast.LENGTH_SHORT).show();
-                            items.remove(position);
-                            notifyItemRemoved(position);
-                            if (position > 0 && items.get(position - 1) instanceof String &&
-                                    (position == items.size() || items.get(position) instanceof String)) {
-                                items.remove(position - 1);
-                                notifyItemRemoved(position - 1);
-                            }
-                            notifyItemRangeChanged(position, getItemCount() - position);
+                new android.app.AlertDialog.Builder(context)
+                        .setTitle("Confirm deletion")
+                        .setMessage("Are you sure you want to delete this plant?")
+                        .setPositiveButton("Yes", (dialog, which) -> {
+                            FirebaseFirestore db = FirebaseFirestore.getInstance();
+                            db.collection("users")
+                                    .document(FirebaseAuth.getInstance().getCurrentUser().getUid())
+                                    .collection("myPlants")
+                                    .document(savedPlant.getId())
+                                    .delete()
+                                    .addOnSuccessListener(aVoid -> {
+                                        Toast.makeText(context, "Plant removed", Toast.LENGTH_SHORT).show();
+                                        items.remove(position);
+                                        notifyItemRemoved(position);
+                                        if (position > 0 && items.get(position - 1) instanceof String &&
+                                                (position == items.size() || items.get(position) instanceof String)) {
+                                            items.remove(position - 1);
+                                            notifyItemRemoved(position - 1);
+                                        }
+                                        notifyItemRangeChanged(position, getItemCount() - position);
+                                    })
+                                    .addOnFailureListener(e ->
+                                            Toast.makeText(context, "Failed to delete: " + e.getMessage(), Toast.LENGTH_SHORT).show());
                         })
-                        .addOnFailureListener(e ->
-                                Toast.makeText(context, "Failed to delete: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+                        .setNegativeButton("No", null)
+                        .setNeutralButton("Cancel", (dialog, which) -> dialog.dismiss())
+                        .show();
             });
+
 
             // Toggle edit
             vh.editButton.setOnClickListener(v -> {

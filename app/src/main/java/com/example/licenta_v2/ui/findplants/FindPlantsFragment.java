@@ -61,6 +61,12 @@ public class FindPlantsFragment extends Fragment {
     private Bitmap lastCapturedImage;
     private EditText searchEditText;
 
+    private List<String> activeLightFilters = new ArrayList<>();
+    private List<String> activeWaterFilters = new ArrayList<>();
+    private List<String> activeToxicityFilters = new ArrayList<>();
+    private List<String> activeFeatureFilters = new ArrayList<>();
+
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -111,29 +117,52 @@ public class FindPlantsFragment extends Fragment {
                                 String favName = favDoc.getId();
                                 if (favName != null) favoriteNames.add(favName);
                             }
+
                             for (PlantDetailsResponse plant : fetchedPlants) {
                                 if (plant.getCommonName() != null &&
                                         favoriteNames.stream().anyMatch(fav -> fav.trim().equalsIgnoreCase(plant.getCommonName().trim()))) {
                                     plant.setFavorite(true);
                                 }
                             }
+
                             allPlants.clear();
                             allPlants.addAll(fetchedPlants);
-                            applyFilterAfterLoading();
+
+                            if (!activeLightFilters.isEmpty() || !activeWaterFilters.isEmpty() ||
+                                    !activeToxicityFilters.isEmpty() || !activeFeatureFilters.isEmpty()) {
+                                applyFiltersToPlantList(activeLightFilters, activeWaterFilters, activeToxicityFilters, activeFeatureFilters);
+                            } else {
+                                filterPlantsByPartialMatch(searchEditText.getText().toString().trim());
+                            }
+
                             loadingBar.setVisibility(View.GONE);
                             recyclerView.setVisibility(View.VISIBLE);
                         })
                         .addOnFailureListener(e -> {
                             allPlants.clear();
                             allPlants.addAll(fetchedPlants);
-                            applyFilterAfterLoading();
+
+                            if (!activeLightFilters.isEmpty() || !activeWaterFilters.isEmpty() ||
+                                    !activeToxicityFilters.isEmpty() || !activeFeatureFilters.isEmpty()) {
+                                applyFiltersToPlantList(activeLightFilters, activeWaterFilters, activeToxicityFilters, activeFeatureFilters);
+                            } else {
+                                filterPlantsByPartialMatch(searchEditText.getText().toString().trim());
+                            }
+
                             loadingBar.setVisibility(View.GONE);
                             recyclerView.setVisibility(View.VISIBLE);
                         });
             } else {
                 allPlants.clear();
                 allPlants.addAll(fetchedPlants);
-                applyFilterAfterLoading();
+
+                if (!activeLightFilters.isEmpty() || !activeWaterFilters.isEmpty() ||
+                        !activeToxicityFilters.isEmpty() || !activeFeatureFilters.isEmpty()) {
+                    applyFiltersToPlantList(activeLightFilters, activeWaterFilters, activeToxicityFilters, activeFeatureFilters);
+                } else {
+                    filterPlantsByPartialMatch(searchEditText.getText().toString().trim());
+                }
+
                 loadingBar.setVisibility(View.GONE);
                 recyclerView.setVisibility(View.VISIBLE);
             }
@@ -164,9 +193,67 @@ public class FindPlantsFragment extends Fragment {
         adapter.updateList(filteredList);
     }
 
+    private void applyFiltersToPlantList(List<String> light, List<String> water, List<String> toxicity, List<String> features) {
+        List<PlantDetailsResponse> filtered = new ArrayList<>();
+
+        for (PlantDetailsResponse plant : allPlants) {
+            boolean matches = true;
+
+            if (!light.isEmpty()) {
+                String plantLight = plant.getLightSummary();
+                matches &= (plantLight != null && light.contains(plantLight));
+            }
+
+            if (!water.isEmpty()) {
+                String plantWater = plant.getCareLevel(); // e nivel de umiditate, conform spuselor tale
+                matches &= (plantWater != null && water.contains(plantWater));
+            }
+
+            if (!toxicity.isEmpty()) {
+                boolean petFriendly = (plant.getToxic() == 0);
+                if (toxicity.contains("Pet-friendly") && !petFriendly) matches = false;
+                if (toxicity.contains("Toxic") && petFriendly) matches = false;
+            }
+
+            if (!features.isEmpty()) {
+                List<String> plantTags = plant.getGpt();
+                if (plantTags == null) plantTags = new ArrayList<>();
+                boolean found = false;
+                for (String tag : features) {
+                    if (plantTags.contains(tag)) {
+                        found = true;
+                        break;
+                    }
+                }
+                matches &= found;
+            }
+
+            if (matches) {
+                filtered.add(plant);
+            }
+        }
+
+        adapter.updateList(filtered);
+    }
+
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_find_plants, container, false);
+
+        getParentFragmentManager().setFragmentResultListener("filters_applied", this, (key, bundle) -> {
+            activeLightFilters = bundle.getStringArrayList("light");
+            activeWaterFilters = bundle.getStringArrayList("water");
+            activeToxicityFilters = bundle.getStringArrayList("toxicity");
+            activeFeatureFilters = bundle.getStringArrayList("features");
+
+            // Aplică direct pe datele existente dacă sunt deja încărcate:
+            if (!allPlants.isEmpty()) {
+                applyFiltersToPlantList(activeLightFilters, activeWaterFilters, activeToxicityFilters, activeFeatureFilters);
+            }
+        });
+
+
 
         view.setOnTouchListener((v, event) -> {
             hideKeyboard();
@@ -224,6 +311,30 @@ public class FindPlantsFragment extends Fragment {
             FavoritesFragment fragment = FavoritesFragment.newInstance("findPlants");
             requireActivity().getSupportFragmentManager()
                     .beginTransaction()
+                    .replace(R.id.frame_layout, fragment)
+                    .addToBackStack(null)
+                    .commit();
+        });
+
+        Button filterButton = view.findViewById(R.id.btnPlantFinder);
+        filterButton.setOnClickListener(v -> {
+            Bundle args = new Bundle();
+            args.putStringArrayList("light", new ArrayList<>(activeLightFilters));
+            args.putStringArrayList("water", new ArrayList<>(activeWaterFilters));
+            args.putStringArrayList("toxicity", new ArrayList<>(activeToxicityFilters));
+            args.putStringArrayList("features", new ArrayList<>(activeFeatureFilters));
+
+            FilterFragment fragment = new FilterFragment();
+            fragment.setArguments(args);
+
+            requireActivity().getSupportFragmentManager()
+                    .beginTransaction()
+                    .setCustomAnimations(
+                            R.anim.slide_in_right,
+                            R.anim.slide_out_left,
+                            R.anim.slide_in_left,
+                            R.anim.slide_out_right
+                    )
                     .replace(R.id.frame_layout, fragment)
                     .addToBackStack(null)
                     .commit();

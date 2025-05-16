@@ -52,6 +52,7 @@ public class NotificationsFragment extends Fragment {
     private ProgressBar loadingBar;
     private TextView emptyMessage;
     private NotificationsAdapter adapter;
+    private int wateredCount = 0;
     private final List<SavedPlant> plantsToWater = new ArrayList<>();
     private final Map<CalendarDay, List<SavedPlant>> plantsByDay = new HashMap<>();
 
@@ -398,10 +399,26 @@ public class NotificationsFragment extends Fragment {
                     .document(plant.getId())
                     .update("lastWateredDate", today)
                     .addOnSuccessListener(aVoid -> {
-                        loadPlantsToWater();
+                        wateredCount++;
+                        plantsToWater.remove(plant);
+                        adapter.notifyDataSetChanged();
+
+                        int totalInitial = wateredCount + plantsToWater.size();
+                        String message = "✅ Watered " + wateredCount + " of " + totalInitial;
+                        View rootView = requireActivity().findViewById(android.R.id.content);
+                        Snackbar.make(rootView, message, Snackbar.LENGTH_SHORT).show();
+
+                        if (plantsToWater.isEmpty()) {
+                            wateredCount = 0;
+                            loadPlantsToWater();
+                        }
+
+                        updateEmptyState();
                     });
         }
     }
+
+
 
     private void updateEmptyState() {
         boolean isEmpty = plantsToWater.isEmpty();

@@ -21,6 +21,8 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_marginTop="60dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
         android:background="@drawable/card_background"
         android:gravity="center_horizontal"
         android:orientation="vertical"
@@ -59,6 +61,52 @@
             android:layout_marginTop="4dp"
             android:text="user@email.com"
             android:textSize="16sp" />
+
+        <TextView
+            android:id="@+id/shareStatusTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Sharing status will appear here"
+            android:textSize="14sp"
+            android:textColor="@android:color/holo_red_dark"
+            android:visibility="gone" />
+
+        <ImageView
+            android:id="@+id/qrImageView"
+            android:layout_width="180dp"
+            android:layout_height="180dp"
+            android:layout_marginTop="24dp"
+            android:contentDescription="QR Code" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="16dp"
+            android:gravity="center"
+            android:layout_gravity="center_horizontal">
+
+            <Button
+                android:id="@+id/scanQrButton"
+                android:layout_width="100dp"
+                android:layout_height="wrap_content"
+                android:backgroundTint="#175202"
+                android:textColor="@android:color/white"
+                android:background="@drawable/rounded_corner"
+                android:text="Scan QR"
+                android:layout_marginEnd="12dp"/>
+
+            <Button
+                android:id="@+id/recoverPlantsButton"
+                android:layout_width="150dp"
+                android:layout_height="wrap_content"
+                android:backgroundTint="#175202"
+                android:textColor="@android:color/white"
+                android:background="@drawable/rounded_corner"
+                android:text="Recover Plants"/>
+        </LinearLayout>
+
 
     </LinearLayout>
 

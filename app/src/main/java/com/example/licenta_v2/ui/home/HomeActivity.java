@@ -4,6 +4,8 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.widget.ImageView;
+import android.widget.Toast;
+
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
@@ -24,6 +26,8 @@ import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 
 import com.example.licenta_v2.ui.login.LoginActivity;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.messaging.FirebaseMessaging;
 
 public class HomeActivity extends AppCompatActivity {
 
@@ -94,6 +98,19 @@ public class HomeActivity extends AppCompatActivity {
             drawerLayout.closeDrawers();
             return true;
         });
+
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user != null) {
+            String userId = user.getUid();
+            FirebaseMessaging.getInstance().subscribeToTopic(userId)
+                    .addOnCompleteListener(task -> {
+                        if (task.isSuccessful()) {
+                            Toast.makeText(this, "Abonare la topic-ul " + userId + " reușită!", Toast.LENGTH_SHORT).show();
+                        } else {
+                            Toast.makeText(this, "Abonare eșuată: " + task.getException(), Toast.LENGTH_SHORT).show();
+                        }
+                    });
+        }
     }
 
     private void replaceFragment(Fragment fragment){

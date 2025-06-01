@@ -209,12 +209,9 @@ public class NotificationsFragment extends Fragment {
                                             int end = (int) (maxDays - daysSince);
 
                                             if (start > 30) continue;
-                                            if (end < 0) {
-                                                start = 0;
-                                                end = 0;
-                                            }
 
                                             int chosenDay = (start + end) / 2;
+                                            if (end < 0) chosenDay = 0;
 
                                             Log.d("WateringCheck", "Checking plant: " + plant.getCustomName());
                                             Log.d("WateringCheck", "chosenDay = " + chosenDay);
@@ -224,7 +221,7 @@ public class NotificationsFragment extends Fragment {
                                             if (chosenDay == 0 && isExposedToRain(plant)) {
                                                 Map<String, Double> rainMap = weatherApiClient.getHistoricalRainfall(finalUserLocation, 7);
                                                 String rainDate = weatherApiClient.getEffectiveRainDate(rainMap);
-                                                if (rainDate != null) {
+                                                if (rainDate != null && !plant.getLastWateredDate().equals(rainDate)) { // verificare diferență
                                                     plant.setLastWateredDate(rainDate);
                                                     FirebaseFirestore.getInstance()
                                                             .collection("users")
@@ -246,9 +243,11 @@ public class NotificationsFragment extends Fragment {
                                                         View rootView = requireActivity().findViewById(android.R.id.content);
                                                         Snackbar.make(rootView, message, 5000).show();
                                                     });
-
-
                                                 }
+                                            }
+
+                                            if (chosenDay <= 0) {
+                                                plantsToWater.add(plant);
                                             }
 
                                         } catch (Exception e) {
@@ -256,11 +255,7 @@ public class NotificationsFragment extends Fragment {
                                         }
                                     }
 
-                                    if (updateNeeded) {
-                                        runIfFragmentAlive(this::loadPlantsToWater);
-                                    } else {
-                                        runIfFragmentAlive(this::calculateOptimalWatering);
-                                    }
+                                    runIfFragmentAlive(this::calculateOptimalWatering);
 
                                 }).start();
                             });
@@ -268,6 +263,7 @@ public class NotificationsFragment extends Fragment {
                 })
                 .addOnFailureListener(e -> Toast.makeText(getContext(), "Failed to load plants", Toast.LENGTH_SHORT).show());
     }
+
 
     private void calculateOptimalWatering() {
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();

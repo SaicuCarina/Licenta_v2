@@ -193,7 +193,7 @@ public class PlantDetailsResponse implements Serializable {
 
     public String getBestWatering() { return best_watering; }
 
-    public static class Description {
+    public static class Description implements Serializable{
         private String value;
         private String citation;
         private String license_name;
@@ -227,7 +227,7 @@ public class PlantDetailsResponse implements Serializable {
         }
     }
 
-    public static class Taxonomy {
+    public static class Taxonomy implements Serializable{
         private String kingdom;
         private String phylum;
         private String className; // avoid "class" keyword
@@ -255,7 +255,7 @@ public class PlantDetailsResponse implements Serializable {
         }
     }
 
-    public static class Watering {
+    public static class Watering implements Serializable{
         private String min;
         private String max;
 

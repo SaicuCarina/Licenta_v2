@@ -1,14 +1,11 @@
 package com.example.licenta_v2.ui.profile;
 
 import android.Manifest;
+import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.Button;
 import android.widget.Toast;
-import android.app.Activity;
-import android.content.pm.ActivityInfo;
-
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -21,6 +18,7 @@ import com.example.licenta_v2.R;
 import com.example.licenta_v2.ui.myPlants.MyPlantsFragment;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -28,7 +26,6 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.journeyapps.barcodescanner.ScanContract;
 import com.journeyapps.barcodescanner.ScanOptions;
 
-import java.util.HashMap;
 import java.util.Map;
 
 public class QRScanFragment extends Fragment {
@@ -50,7 +47,6 @@ public class QRScanFragment extends Fragment {
         startQRScan();
     }
 
-
     private void startQRScan() {
         if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
             requestPermissionLauncher.launch(Manifest.permission.CAMERA);
@@ -63,7 +59,7 @@ public class QRScanFragment extends Fragment {
             registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
                 if (isGranted) {
                     launchScanner();
-                } else {
+                } else if (isAdded()) {
                     Toast.makeText(requireContext(), "Camera permission required", Toast.LENGTH_SHORT).show();
                 }
             });
@@ -71,12 +67,16 @@ public class QRScanFragment extends Fragment {
     private final ActivityResultLauncher<ScanOptions> scanLauncher = registerForActivityResult(
             new ScanContract(),
             result -> {
-                if (result.getContents() != null) {
+                if (isAdded() && result.getContents() != null) {
                     importPlantsFromUser(result.getContents());
                 }
             });
 
     private void launchScanner() {
+        if (!isAdded()) return;
+
+        requireActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+
         ScanOptions options = new ScanOptions();
         options.setPrompt("Scan QR Code");
         options.setBeepEnabled(true);
@@ -86,7 +86,10 @@ public class QRScanFragment extends Fragment {
     }
 
     private void importPlantsFromUser(String otherUserUid) {
-        String currentUid = auth.getCurrentUser().getUid();
+        FirebaseUser currentUser = auth.getCurrentUser();
+        if (currentUser == null || !isAdded()) return;
+
+        String currentUid = currentUser.getUid();
 
         CollectionReference source = db.collection("users").document(otherUserUid).collection("myPlants");
         CollectionReference target = db.collection("users").document(currentUid).collection("myPlants");
@@ -106,30 +109,33 @@ public class QRScanFragment extends Fragment {
                     .document(otherUserUid)
                     .update("delegatedTo", FieldValue.arrayUnion(currentUid));
 
-            Toast.makeText(requireContext(), "The plants have been transferred!", Toast.LENGTH_LONG).show();
+            if (isAdded()) {
+                Toast.makeText(requireContext(), "The plants have been transferred!", Toast.LENGTH_LONG).show();
 
-            requireActivity().getSupportFragmentManager()
-                    .beginTransaction()
-                    .replace(R.id.frame_layout, new MyPlantsFragment())
-                    .commit();
+                requireActivity().getSupportFragmentManager()
+                        .beginTransaction()
+                        .replace(R.id.frame_layout, new MyPlantsFragment())
+                        .commit();
 
-            requireActivity().findViewById(R.id.bottomNavigationView)
-                    .post(() -> {
-                        BottomNavigationView nav = requireActivity().findViewById(R.id.bottomNavigationView);
-                        nav.setSelectedItemId(R.id.myPlants);
-                    });
+                requireActivity().findViewById(R.id.bottomNavigationView)
+                        .post(() -> {
+                            BottomNavigationView nav = requireActivity().findViewById(R.id.bottomNavigationView);
+                            nav.setSelectedItemId(R.id.myPlants);
+                        });
+            }
 
         }).addOnFailureListener(e -> {
-            Toast.makeText(requireContext(), "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            if (isAdded()) {
+                Toast.makeText(requireContext(), "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            }
         });
     }
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        requireActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
+        if (isAdded()) {
+            requireActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
+        }
     }
-
-
-
 }

@@ -22,6 +22,8 @@ import com.example.licenta_v2.ui.myPlants.MyPlantsFragment;
 import com.example.licenta_v2.ui.findplants.FindPlantsFragment;
 import com.example.licenta_v2.ui.notifications.NotificationsFragment;
 import com.example.licenta_v2.ui.profile.ProfileFragment;
+import com.example.licenta_v2.ui.settings.AccountSettingsFragment;
+import com.example.licenta_v2.ui.settings.NotificationSettingsFragment;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 
@@ -77,10 +79,20 @@ public class HomeActivity extends AppCompatActivity {
         navigationView.setNavigationItemSelectedListener(item -> {
             int id = item.getItemId();
 
-            if (id == R.id.nav_help) {
+            if (id == R.id.nav_account_set) {
+                getSupportFragmentManager()
+                        .beginTransaction()
+                        .replace(R.id.frame_layout, new AccountSettingsFragment())
+                        .addToBackStack(null)
+                        .commit();
+            } else if (id == R.id.nav_help) {
                 replaceFragment(new ProfileFragment());
             } else if (id == R.id.nav_notifications) {
-                replaceFragment(new ProfileFragment());
+                getSupportFragmentManager()
+                        .beginTransaction()
+                        .replace(R.id.frame_layout, new NotificationSettingsFragment())
+                        .addToBackStack(null)
+                        .commit();
             } else if (id == R.id.nav_logout) {
                 FirebaseAuth.getInstance().signOut();
 
@@ -94,23 +106,10 @@ public class HomeActivity extends AppCompatActivity {
                 startActivity(intent);
             }
 
-
             drawerLayout.closeDrawers();
             return true;
         });
 
-        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-        if (user != null) {
-            String userId = user.getUid();
-            FirebaseMessaging.getInstance().subscribeToTopic(userId)
-                    .addOnCompleteListener(task -> {
-                        if (task.isSuccessful()) {
-                            Toast.makeText(this, "Abonare la topic-ul " + userId + " reușită!", Toast.LENGTH_SHORT).show();
-                        } else {
-                            Toast.makeText(this, "Abonare eșuată: " + task.getException(), Toast.LENGTH_SHORT).show();
-                        }
-                    });
-        }
     }
 
     private void replaceFragment(Fragment fragment){

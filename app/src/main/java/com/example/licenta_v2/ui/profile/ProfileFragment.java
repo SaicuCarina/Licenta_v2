@@ -211,21 +211,31 @@ public class ProfileFragment extends Fragment {
         FirebaseUser user = auth.getCurrentUser();
         if (user == null || imageUri == null) return;
 
-        String fileName = "profile_" + UUID.randomUUID().toString();
-        storage.getReference("profile_images/" + fileName)
+        String userId = user.getUid();
+        String fileName = UUID.randomUUID().toString();
+
+        storage.getReference("profile_images/" + userId + "/" + fileName)
                 .putFile(imageUri)
                 .addOnSuccessListener(taskSnapshot -> {
                     taskSnapshot.getStorage().getDownloadUrl().addOnSuccessListener(uri -> {
-                        // Salvează URL-ul în Firestore
-                        db.collection("users").document(user.getUid())
+                        db.collection("users").document(userId)
                                 .update("profileImage", uri.toString())
-                                .addOnSuccessListener(aVoid ->
-                                        Toast.makeText(getContext(), "Profile updated", Toast.LENGTH_SHORT).show())
-                                .addOnFailureListener(e ->
-                                        Toast.makeText(getContext(), "Failed to update profile", Toast.LENGTH_SHORT).show());
+                                .addOnSuccessListener(aVoid -> {
+                                    if (isAdded()) {
+                                        Toast.makeText(requireContext(), "Profile updated", Toast.LENGTH_SHORT).show();
+                                    }
+                                })
+                                .addOnFailureListener(e -> {
+                                    if (isAdded()) {
+                                        Toast.makeText(requireContext(), "Failed to update profile", Toast.LENGTH_SHORT).show();
+                                    }
+                                });
                     });
                 })
-                .addOnFailureListener(e ->
-                        Toast.makeText(getContext(), "Upload failed", Toast.LENGTH_SHORT).show());
+                .addOnFailureListener(e -> {
+                    if (isAdded()) {
+                        Toast.makeText(requireContext(), "Upload failed", Toast.LENGTH_SHORT).show();
+                    }
+                });
     }
 }
